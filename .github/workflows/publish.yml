@@ -20,11 +20,9 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      # Accepts the SDK licenses and installs the platform the modules compile against (compileSdk 37).
+      # Accepts the SDK licenses.
       # AGP downloads any build tools it needs on top of that.
-      - uses: android-actions/setup-android@v3
-        with:
-          packages: 'platform-tools platforms;android-37'
+      - uses: android-actions/setup-android@v4
 
       - uses: gradle/actions/setup-gradle@v4
 
