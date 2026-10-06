@@ -45,6 +45,32 @@ dependencies {
 }
 ```
 
+#### GitHub Packages
+The library is also published to GitHub Packages. GitHub requires a token even to read packages, create a personal access token with the `read:packages` scope and add the repository in `settings.gradle`:
+
+```groovy
+dependencyResolutionManagement {
+ repositories {
+  ...
+  maven {
+   url = uri('https://maven.pkg.github.com/soramitsukhmer-lab/vlog')
+   credentials {
+    username = providers.gradleProperty('gpr.user').orNull ?: System.getenv('USERNAME')
+    password = providers.gradleProperty('gpr.key').orNull ?: System.getenv('TOKEN')
+   }
+  }
+ }
+}
+```
+Put `gpr.user` and `gpr.key` in your `~/.gradle/gradle.properties`, never in the project. The coordinates are `com.github.girish3:library:<version>` and `com.github.girish3:library-no-op:<version>`.
+
+#### Publishing
+Publishing a GitHub release runs the `Publish to GitHub Packages` workflow. To publish from your machine set `gpr.user` and `gpr.key` (token with `write:packages`) and run:
+```
+./gradlew :library:publishReleasePublicationToGitHubPackagesRepository :library-no-op:publishReleasePublicationToGitHubPackagesRepository
+```
+GitHub Packages does not allow overwriting a version, so bump `versionName` in the module's `build.gradle` before each release.
+
 ### Basic Usage
 The Vlog exposes easy-to-use APIs and has same logging methods as Android's Log utility ( `Log.v`, `Log.d`...)
 ```kotlin
