@@ -64,8 +64,10 @@ class Vlog private constructor(val mApplicationContext: Context) {
     private fun startService() {
         mServiceIntent = Intent(mApplicationContext, VlogService::class.java)
         // TODO: is there a need to pass token as an extra?
-        mApplicationContext.bindService(mServiceIntent, mServerConn, Context.BIND_AUTO_CREATE)
-        mApplicationContext.startService(mServiceIntent)
+        mServiceIntent?.let {
+            mApplicationContext.bindService(it, mServerConn, Context.BIND_AUTO_CREATE)
+            mApplicationContext.startService(it)
+        }
     }
 
     fun isEnabled(): Boolean {

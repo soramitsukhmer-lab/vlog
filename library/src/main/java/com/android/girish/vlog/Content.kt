@@ -148,9 +148,11 @@ internal class Content(context: Context, val mContentViewModel: ContentViewModel
     }
 
     fun hideContent() {
-        VlogService.sInstance.chatHeads.handler.removeCallbacks(
-            VlogService.sInstance.chatHeads.showContentRunnable
-        )
+        VlogService.sInstance.chatHeads.showContentRunnable?.let {
+            VlogService.sInstance.chatHeads.handler.removeCallbacks(
+                it
+            )
+        }
 
         scaleSpring.endValue = 0.0
 

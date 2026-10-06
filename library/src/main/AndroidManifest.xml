@@ -2,8 +2,10 @@
         package="com.android.girish.vlog">
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"></uses-permission>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <application>
         <service android:name="com.android.girish.vlog.VlogService"
+            android:foregroundServiceType="dataSync"
             android:exported="true"/>
     </application>
 </manifest>

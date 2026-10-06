@@ -13,9 +13,11 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import java.io.IOException
 import java.net.HttpURLConnection
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 
 fun Bitmap.addBackground(color: Int): Bitmap {
-    val newBitmap = Bitmap.createBitmap(width, height, config)
+    val newBitmap = createBitmap(width, height)
     val canvas = Canvas(newBitmap)
     canvas.drawColor(color)
     val rect = Rect(0, 0, width, height)
@@ -24,7 +26,7 @@ fun Bitmap.addBackground(color: Int): Bitmap {
 }
 
 fun Bitmap.makeCircular(): Bitmap {
-    val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val output = createBitmap(width, height)
     val canvas = Canvas(output)
 
     val paint = Paint()
@@ -44,7 +46,7 @@ fun Bitmap.makeCircular(): Bitmap {
 }
 
 fun Bitmap.addShadow(): Bitmap {
-    val bmOut = Bitmap.createBitmap(width + 10, height + 20, Bitmap.Config.ARGB_8888)
+    val bmOut = createBitmap(width + 10, height + 20)
 
     val centerX = (bmOut.width / 2 - width / 2).toFloat()
     val centerY = (bmOut.height / 2 - height / 2).toFloat()
@@ -64,7 +66,7 @@ fun Bitmap.addShadow(): Bitmap {
 }
 
 fun Bitmap.scaleToSize(size: Int): Bitmap {
-    return Bitmap.createScaledBitmap(this, size, size, true)
+    return this.scale(size, size)
 }
 
 fun fetchBitmap(urlStr: String): Bitmap? {
@@ -93,11 +95,7 @@ fun drawableToBitmap(drawable: Drawable): Bitmap {
     val height = if (!drawable.bounds.isEmpty) drawable.bounds.height() else drawable.intrinsicHeight
 
     // Now we check we are > 0
-    val bitmap = Bitmap.createBitmap(
-        if (width <= 0) 1 else width,
-        if (height <= 0) 1 else height,
-        Bitmap.Config.ARGB_8888
-    )
+    val bitmap = createBitmap(if (width <= 0) 1 else width, if (height <= 0) 1 else height)
     val canvas = Canvas(bitmap)
     drawable.setBounds(0, 0, canvas.width, canvas.height)
     drawable.draw(canvas)

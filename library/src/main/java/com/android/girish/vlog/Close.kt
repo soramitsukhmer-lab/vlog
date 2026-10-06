@@ -139,8 +139,8 @@ internal class Close(var chatHeads: ChatHeads) : View(chatHeads.context) {
         chatHeads.addView(gradient, gradientParams)
     }
 
-    override fun onDraw(canvas: Canvas?) {
-        canvas?.drawBitmap(bitmapBg, width / 2 - bitmapBg.width.toFloat() / 2, height / 2 - bitmapBg.height.toFloat() / 2, paint)
-        canvas?.drawBitmap(bitmapClose, width / 2 - bitmapClose.width.toFloat() / 2, height / 2 - bitmapClose.height.toFloat() / 2, paint)
+    override fun onDraw(canvas: Canvas) {
+        canvas.drawBitmap(bitmapBg, width / 2 - bitmapBg.width.toFloat() / 2, height / 2 - bitmapBg.height.toFloat() / 2, paint)
+        canvas.drawBitmap(bitmapClose, width / 2 - bitmapClose.width.toFloat() / 2, height / 2 - bitmapClose.height.toFloat() / 2, paint)
     }
 }

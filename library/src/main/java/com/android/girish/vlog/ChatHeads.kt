@@ -624,13 +624,13 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
 
                         activeChatHead = topChatHead
 
-                        handler.removeCallbacks(showContentRunnable)
+                        showContentRunnable?.let { handler.removeCallbacks(it) }
 
                         showContentRunnable = Runnable {
                             content.showContent()
                         }
 
-                        handler.postDelayed(showContentRunnable, 200)
+                        showContentRunnable?.let { handler.postDelayed(it, 200) }
                     }
                 } else if (!toggled) {
                     moving = false
