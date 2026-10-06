@@ -64,6 +64,20 @@ vlog.stop()
 vlog.isEnabled() // returns true if vlog.start() was called
 ```
 
+### Theming
+The log viewer uses light colors by default. To match it to your app, pass a `VlogThemeConfig` with the colors you want to change, anything left out keeps its default. It takes effect right away, also when the viewer is already showing:
+```kotlin
+vlog.setTheme(
+    VlogThemeConfig(
+        surfaceColor = Color.parseColor("#1E1E1E"),
+        textColor = Color.WHITE,
+        buttonColor = Color.parseColor("#3A3A3A"),
+        errorColor = Color.parseColor("#FF6B6B"),
+    ),
+)
+```
+The available colors are `surfaceColor`, `textColor`, `hintColor`, `outlineColor`, `buttonColor`, `buttonTextColor`, `warnColor` and `errorColor`. `library-no-op` has the same API, so the call compiles in release builds too.
+
 ### Bubble mode
 By default Vlog draws a chat head over other apps and needs the "draw over other apps" permission. Alternatively it can use the Android notification bubble API, which needs no overlay permission:
 ```kotlin

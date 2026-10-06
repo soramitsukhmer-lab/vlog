@@ -24,65 +24,18 @@
 
 package com.android.girish.vlog
 
-import android.content.Context
-
 /**
- * No-op implementation.
+ * No-op implementation, has the same shape as the real one so host code compiles against both.
  */
-class Vlog private constructor(
-    val mApplicationContext: Context,
-) {
+data class VlogThemeConfig
     @JvmOverloads
-    fun start(mode: Mode = Mode.OVERLAY) {}
-
-    fun stop() {}
-
-    fun isEnabled(): Boolean = false
-
-    fun setTheme(config: VlogThemeConfig) {}
-
-    fun v(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun d(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun i(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun w(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun e(
-        tag: String,
-        msg: String,
-    ) {}
-
-    enum class Mode {
-        OVERLAY,
-        BUBBLE,
-    }
-
-    companion object {
-        private var instance: Vlog? = null
-
-        @JvmStatic
-        fun getInstance(context: Context): Vlog {
-            synchronized(this) {
-                if (instance == null) {
-                    instance = Vlog(context)
-                }
-
-                return instance!!
-            }
-        }
-    }
-}
+    constructor(
+        val surfaceColor: Int? = null,
+        val textColor: Int? = null,
+        val hintColor: Int? = null,
+        val outlineColor: Int? = null,
+        val buttonColor: Int? = null,
+        val buttonTextColor: Int? = null,
+        val warnColor: Int? = null,
+        val errorColor: Int? = null,
+    )

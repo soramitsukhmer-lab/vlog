@@ -57,11 +57,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -184,7 +182,7 @@ private fun LogFilterBar(
             LogButton(onClick = { isMenuExpanded = true }) {
                 Text(selectedPriorityIndex?.let { priorityNames[it] } ?: stringResource(R.string.select_priority))
                 Spacer(Modifier.width(2.dp))
-                Icon(painterResource(R.drawable.ic_arrow_down), contentDescription = null, tint = Color.Unspecified)
+                Icon(painterResource(R.drawable.ic_arrow_down), contentDescription = null)
             }
             DropdownMenu(expanded = isMenuExpanded, onDismissRequest = { isMenuExpanded = false }) {
                 priorityNames.forEachIndexed { index, name ->
@@ -207,7 +205,7 @@ private fun LogFilterBar(
                 onKeywordChange(it)
             },
             singleLine = true,
-            textStyle = TextStyle(color = colorResource(R.color.editTextColor), fontSize = 14.sp),
+            textStyle = TextStyle(color = LocalVlogColors.current.inputText, fontSize = 14.sp),
             modifier =
                 Modifier
                     .weight(1f)
@@ -222,7 +220,7 @@ private fun LogFilterBar(
                     if (keyword.isEmpty()) {
                         Text(
                             stringResource(R.string.filter_hint),
-                            color = colorResource(R.color.editTextColorHint),
+                            color = LocalVlogColors.current.hint,
                             fontSize = 14.sp,
                         )
                     }
@@ -243,8 +241,8 @@ private fun LogButton(
         shape = RoundedCornerShape(2.dp),
         colors =
             ButtonDefaults.buttonColors(
-                containerColor = colorResource(R.color.button_bg),
-                contentColor = MaterialTheme.colorScheme.onSurface,
+                containerColor = LocalVlogColors.current.button,
+                contentColor = LocalVlogColors.current.buttonText,
             ),
     ) {
         content()
@@ -260,8 +258,8 @@ private fun LogItem(
 ) {
     val color =
         when (log.logPriority) {
-            VlogModel.ERROR -> colorResource(R.color.log_error)
-            VlogModel.WARN -> colorResource(R.color.log_warn)
+            VlogModel.ERROR -> LocalVlogColors.current.error
+            VlogModel.WARN -> LocalVlogColors.current.warn
             else -> MaterialTheme.colorScheme.onSurface
         }
     val message =
@@ -297,7 +295,7 @@ private fun LogItem(
         Icon(
             painter = painterResource(if (isExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down),
             contentDescription = null,
-            tint = Color.Unspecified,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(end = 10.dp),
         )
     }

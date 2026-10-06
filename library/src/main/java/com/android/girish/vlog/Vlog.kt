@@ -79,6 +79,14 @@ class Vlog private constructor(
 
     fun isEnabled(): Boolean = isEnabled.get()
 
+    /**
+     * Sets the colors of the log viewer, for example to match your app. Takes effect right away, also
+     * when the viewer is already showing. Colors left `null` in [config] keep the Vlog default.
+     */
+    fun setTheme(config: VlogThemeConfig) {
+        VlogThemeState.config = config
+    }
+
     private fun requestDrawOverPermission() {
         val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${mApplicationContext.packageName}"))
         intent.setFlags(FLAG_ACTIVITY_NEW_TASK)
