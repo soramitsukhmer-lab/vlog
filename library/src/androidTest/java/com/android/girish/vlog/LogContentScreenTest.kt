@@ -53,6 +53,7 @@ class LogContentScreenTest {
         composeRule.setContent {
             VlogTheme {
                 LogContentScreen(
+                    title = "Sample App v1.2",
                     logs = logs,
                     onKeywordChange = onKeywordChange,
                     onPriorityIndexSelected = onPriorityIndexSelected,
@@ -60,6 +61,13 @@ class LogContentScreenTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun showsAppTitleInTheHeader() {
+        setScreen()
+
+        composeRule.onNodeWithText("Sample App v1.2").assertIsDisplayed()
     }
 
     @Test

@@ -71,11 +71,13 @@ private const val COLLAPSED_MESSAGE_LENGTH = 50
 private const val EXPANDED_MESSAGE_MAX_LINES = 20
 
 /**
- * The log viewer: a filter bar (priority, keyword, clear) above the list of logs.
+ * The log viewer: a header (app title and clear button), a filter bar (priority and keyword)
+ * and the list of logs.
  *
  * Replaces the `log_content_view` XML layout. Filtering is delegated to the caller through the
  * callbacks, [logs] is expected to be the already filtered list.
  *
+ * @param title the title shown in the header, usually the name and version of the app using Vlog
  * @param logs the logs to show
  * @param onKeywordChange called when the user edits the filter keyword
  * @param onPriorityIndexSelected called with the position in `log_priority_names` the user picked
@@ -83,6 +85,7 @@ private const val EXPANDED_MESSAGE_MAX_LINES = 20
  */
 @Composable
 internal fun LogContentScreen(
+    title: String,
     logs: List<VlogModel>,
     onKeywordChange: (String) -> Unit,
     onPriorityIndexSelected: (Int) -> Unit,
@@ -100,10 +103,10 @@ internal fun LogContentScreen(
                 RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp),
             ),
     ) {
+        LogHeader(title = title, onClearLogs = onClearLogs)
         LogFilterBar(
             onKeywordChange = onKeywordChange,
             onPriorityIndexSelected = onPriorityIndexSelected,
-            onClearLogs = onClearLogs,
         )
         LazyColumn(Modifier.weight(1f)) {
             items(logs) { log ->
@@ -120,10 +123,34 @@ internal fun LogContentScreen(
 }
 
 @Composable
+private fun LogHeader(
+    title: String,
+    onClearLogs: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier
+            .fillMaxWidth()
+            .padding(start = 10.dp, top = 5.dp, end = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        LogButton(onClick = onClearLogs) {
+            Text(stringResource(R.string.clear_logs))
+        }
+    }
+}
+
+@Composable
 private fun LogFilterBar(
     onKeywordChange: (String) -> Unit,
     onPriorityIndexSelected: (Int) -> Unit,
-    onClearLogs: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val priorityNames = stringArrayResource(R.array.log_priority_names)
@@ -187,10 +214,6 @@ private fun LogFilterBar(
                 }
             },
         )
-
-        LogButton(onClick = onClearLogs) {
-            Text(stringResource(R.string.clear_logs))
-        }
     }
 }
 
@@ -279,6 +302,7 @@ private fun VlogModel.priorityInitial(): String =
 private fun LogContentScreenPreview() {
     VlogTheme {
         LogContentScreen(
+            title = "Vlog Sample v1.0",
             logs =
                 listOf(
                     VlogModel(VlogModel.VERBOSE, "Surface", "Test log with verbose priority"),

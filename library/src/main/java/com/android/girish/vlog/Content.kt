@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Observer
+import com.android.girish.vlog.utils.getAppTitle
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringSystem
@@ -21,6 +22,7 @@ internal class Content(
     private val springSystem = SpringSystem.create()
     private val scaleSpring = springSystem.createSpring()
 
+    private val title = context.getAppTitle()
     private val logs = mutableStateOf<List<VlogModel>>(emptyList())
     private val logObserver = Observer<List<VlogModel>> { logs.value = it }
 
@@ -30,6 +32,7 @@ internal class Content(
                 setContent {
                     VlogTheme {
                         LogContentScreen(
+                            title = title,
                             logs = logs.value,
                             onKeywordChange = mContentViewModel::onKeywordEnter,
                             onPriorityIndexSelected = mContentViewModel::onPriorityIndexSelected,

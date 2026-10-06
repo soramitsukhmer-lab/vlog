@@ -22,36 +22,30 @@
  * SOFTWARE.
  */
 
-package com.android.girish.vlog
+package com.android.girish.vlog.utils
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
-import com.android.girish.vlog.utils.getAppTitle
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 
 /**
- * Expanded content of the Vlog notification bubble. Shows the same log viewer as the overlay mode.
+ * The name and version of the app using Vlog, for example `My App v1.2.0`. Falls back to the name
+ * alone when the version is not available.
  */
-internal class VlogBubbleActivity : ComponentActivity() {
-    private val viewModel = ServiceLocator.provideContentViewModel()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            VlogTheme {
-                val logs by viewModel.resultObserver.observeAsState(emptyList())
-                LogContentScreen(
-                    title = remember { getAppTitle() },
-                    logs = logs,
-                    onKeywordChange = viewModel::onKeywordEnter,
-                    onPriorityIndexSelected = viewModel::onPriorityIndexSelected,
-                    onClearLogs = viewModel::onClearLogs,
-                )
-            }
-        }
-    }
+internal fun Context.getAppTitle(): String {
+    val name = applicationInfo.loadLabel(packageManager).toString()
+    val versionName = getVersionName()
+    return if (versionName.isNullOrEmpty()) name else "$name v$versionName"
 }
+
+private fun Context.getVersionName(): String? =
+    try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0)).versionName
+        } else {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageInfo(packageName, 0).versionName
+        }
+    } catch (e: PackageManager.NameNotFoundException) {
+        null
+    }
