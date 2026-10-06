@@ -5,10 +5,10 @@ import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 
 abstract class AbstractLogger {
-
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(VERBOSE, DEBUG, INFO, WARN, ERROR)
     annotation class LogPriority
+
     companion object {
         /**
          * Priority constants
@@ -26,10 +26,18 @@ abstract class AbstractLogger {
         _nextLogger = logger
     }
 
-    fun log(@LogPriority priority: Int, tag: String, message: String) {
+    fun log(
+        @LogPriority priority: Int,
+        tag: String,
+        message: String,
+    ) {
         write(priority, tag, message)
         _nextLogger?.log(priority, tag, message)
     }
 
-    protected abstract fun write(@LogPriority priority: Int, tag: String, message: String)
+    protected abstract fun write(
+        @LogPriority priority: Int,
+        tag: String,
+        message: String,
+    )
 }

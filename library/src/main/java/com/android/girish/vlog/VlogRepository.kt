@@ -16,8 +16,9 @@ import com.android.girish.vlog.filter.PriorityFilter
  * @property mFilterDelay The amount of delay (in ms) before the filter process starts
  * @constructor Create empty Filter manager
  */
-internal class VlogRepository(private val mFilterDelay: Long = 100) : Filter() {
-
+internal class VlogRepository(
+    private val mFilterDelay: Long = 100,
+) : Filter() {
     private val handler: Handler = Handler(Looper.getMainLooper())
     private val mKeywordFilter = KeywordFilter()
     private val mPriorityFilter = PriorityFilter()
@@ -37,7 +38,6 @@ internal class VlogRepository(private val mFilterDelay: Long = 100) : Filter() {
      *
      */
     private fun initiateFilter() {
-
         // remove all callbacks and messages
         handler.removeCallbacksAndMessages(null)
         handler.postDelayed(
@@ -46,7 +46,7 @@ internal class VlogRepository(private val mFilterDelay: Long = 100) : Filter() {
                     this@VlogRepository.filter(null)
                 }
             },
-            mFilterDelay
+            mFilterDelay,
         )
     }
 
@@ -75,7 +75,9 @@ internal class VlogRepository(private val mFilterDelay: Long = 100) : Filter() {
      *
      * @param priority
      */
-    fun configureLogPriority(@LogPriority priority: Int) {
+    fun configureLogPriority(
+        @LogPriority priority: Int,
+    ) {
         mPriorityFilter.setPriority(priority)
         initiateFilter()
     }
@@ -108,7 +110,10 @@ internal class VlogRepository(private val mFilterDelay: Long = 100) : Filter() {
     }
 
     @UiThread
-    override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+    override fun publishResults(
+        constraint: CharSequence?,
+        results: FilterResults?,
+    ) {
         mResultListener?.onFilterResults(results?.values as List<VlogModel>)
     }
 

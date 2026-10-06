@@ -5,8 +5,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.android.girish.vlog.VlogModel.LogPriority
 
-internal class ContentViewModel(private val mVlogRepository: VlogRepository) : ViewModel(), VlogRepository.ResultListener {
-
+internal class ContentViewModel(
+    private val mVlogRepository: VlogRepository,
+) : ViewModel(),
+    VlogRepository.ResultListener {
     val resultObserver = MutableLiveData<List<VlogModel>>()
 
     init {
@@ -31,7 +33,9 @@ internal class ContentViewModel(private val mVlogRepository: VlogRepository) : V
      *
      * @param priority
      */
-    fun onPrioritySet(@LogPriority priority: Int) {
+    fun onPrioritySet(
+        @LogPriority priority: Int,
+    ) {
         mVlogRepository.configureLogPriority(priority)
     }
 

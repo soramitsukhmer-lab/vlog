@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,13 +27,17 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringSystem
 
-internal class Content(context: Context, val mContentViewModel: ContentViewModel) : LinearLayout(context) {
+internal class Content(
+    context: Context,
+    val mContentViewModel: ContentViewModel,
+) : LinearLayout(context) {
     private val springSystem = SpringSystem.create()
     private val scaleSpring = springSystem.createSpring()
 
     var messagesView: RecyclerView
     var layoutManager = LinearLayoutManager(context)
     val mVlogAdapter: VlogAdapter = VlogAdapter()
+    private val logObserver = Observer<List<VlogModel>> { mVlogAdapter.addLogs(it) }
 
     init {
         inflate(context, R.layout.log_content_view, this)
@@ -56,13 +61,23 @@ internal class Content(context: Context, val mContentViewModel: ContentViewModel
                 override fun afterTextChanged(s: Editable?) {
                 }
 
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int,
+                ) {
                 }
 
-                override fun onTextChanged(constraint: CharSequence?, start: Int, before: Int, count: Int) {
+                override fun onTextChanged(
+                    constraint: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int,
+                ) {
                     mContentViewModel.onKeywordEnter(constraint.toString())
                 }
-            }
+            },
         )
 
         scaleSpring.addListener(
@@ -71,7 +86,7 @@ internal class Content(context: Context, val mContentViewModel: ContentViewModel
                     scaleX = spring.currentValue.toFloat()
                     scaleY = spring.currentValue.toFloat()
                 }
-            }
+            },
         )
         scaleSpring.springConfig = SpringConfigs.CONTENT_SCALE
 
@@ -81,27 +96,37 @@ internal class Content(context: Context, val mContentViewModel: ContentViewModel
             mContentViewModel.onClearLogs()
         }
 
-        mContentViewModel.resultObserver.observeForever {
-            mVlogAdapter.addLogs(it)
-        }
+        mContentViewModel.resultObserver.observeForever(logObserver)
     }
 
-    private fun showPriorityOptions(context: Context, logPriorityTxtVw: TextView, vlogAdapter: VlogAdapter) {
+    /**
+     * The view model outlives the service, so the observer must be removed explicitly
+     * to avoid leaking this view (and the service context) across restarts.
+     */
+    fun release() {
+        mContentViewModel.resultObserver.removeObserver(logObserver)
+    }
 
+    private fun showPriorityOptions(
+        context: Context,
+        logPriorityTxtVw: TextView,
+        vlogAdapter: VlogAdapter,
+    ) {
         val builder: AlertDialog.Builder = AlertDialog.Builder(context)
         builder.setTitle("Select Log priority")
         val priorityList: List<String> = resources.getStringArray(R.array.log_priority_names).toMutableList()
-        val arrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(
-            context,
-            android.R.layout.simple_list_item_1,
-            priorityList
-        )
+        val arrayAdapter: ArrayAdapter<String> =
+            ArrayAdapter<String>(
+                context,
+                android.R.layout.simple_list_item_1,
+                priorityList,
+            )
         builder.setAdapter(arrayAdapter) { _, selectedIndex ->
             logPriorityTxtVw.text = priorityList[selectedIndex]
             mContentViewModel.onPrioritySet(getLogPriority(selectedIndex))
         }
         builder.setPositiveButton(
-            "Cancel"
+            "Cancel",
         ) { dialog, _ -> dialog?.dismiss() }
         val dialog: AlertDialog = builder.create()
         dialog.window?.setType(getOverlayFlag())
@@ -122,7 +147,10 @@ internal class Content(context: Context, val mContentViewModel: ContentViewModel
         return priority
     }
 
-    private fun isAppInstalled(context: Context, packageName: String): Boolean {
+    private fun isAppInstalled(
+        context: Context,
+        packageName: String,
+    ): Boolean {
         val pm = context.packageManager
         try {
             pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
@@ -133,7 +161,10 @@ internal class Content(context: Context, val mContentViewModel: ContentViewModel
         return false
     }
 
-    private fun isAppEnabled(context: Context, packageName: String): Boolean {
+    private fun isAppEnabled(
+        context: Context,
+        packageName: String,
+    ): Boolean {
         var appStatus = false
         try {
             val ai = context.packageManager.getApplicationInfo(packageName, 0)
@@ -150,7 +181,7 @@ internal class Content(context: Context, val mContentViewModel: ContentViewModel
     fun hideContent() {
         VlogService.sInstance.chatHeads.showContentRunnable?.let {
             VlogService.sInstance.chatHeads.handler.removeCallbacks(
-                it
+                it,
             )
         }
 

@@ -20,13 +20,21 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
-internal class Rectangle(val x: Double, val y: Double, val w: Double, val h: Double) {
+internal class Rectangle(
+    val x: Double,
+    val y: Double,
+    val w: Double,
+    val h: Double,
+) {
     private val OUT_LEFT = 1
     private val OUT_TOP = 2
     private val OUT_RIGHT = 4
     private val OUT_BOTTOM = 8
 
-    fun outcode(x: Double, y: Double): Int {
+    fun outcode(
+        x: Double,
+        y: Double,
+    ): Int {
         var out = 0
 
         when {
@@ -42,7 +50,12 @@ internal class Rectangle(val x: Double, val y: Double, val w: Double, val h: Dou
         return out
     }
 
-    fun intersectsLine(x1: Double, y1: Double, x2: Double, y2: Double): Boolean {
+    fun intersectsLine(
+        x1: Double,
+        y1: Double,
+        x2: Double,
+        y2: Double,
+    ): Boolean {
         var x1 = x1
         var y1 = y1
         var out1: Int
@@ -79,10 +92,13 @@ internal class Rectangle(val x: Double, val y: Double, val w: Double, val h: Dou
     }
 }
 
-internal class Line(val x1: Double, val y1: Double, var x2: Double, var y2: Double) {
-    fun intersects(r: Rectangle): Boolean {
-        return r.intersectsLine(x1, y1, x2, y2)
-    }
+internal class Line(
+    val x1: Double,
+    val y1: Double,
+    var x2: Double,
+    var y2: Double,
+) {
+    fun intersects(r: Rectangle): Boolean = r.intersectsLine(x1, y1, x2, y2)
 
     private fun f(x: Double): Double {
         val slope = (y2 - y1) / (x2 - x1)
@@ -96,7 +112,11 @@ internal class Line(val x1: Double, val y1: Double, var x2: Double, var y2: Doub
     }
 }
 
-internal class ChatHeads(context: Context, val mContentViewModel: ContentViewModel) : View.OnTouchListener, FrameLayout(context) {
+internal class ChatHeads(
+    context: Context,
+    val mContentViewModel: ContentViewModel,
+) : FrameLayout(context),
+    View.OnTouchListener {
     companion object {
         val CHAT_HEAD_OUT_OF_SCREEN_X: Int = dpToPx(10f)
         val CHAT_HEAD_SIZE: Int = dpToPx(62f)
@@ -110,9 +130,12 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
 
         const val CHAT_HEAD_DRAG_TOLERANCE: Float = 20f
 
-        fun distance(x1: Float, x2: Float, y1: Float, y2: Float): Float {
-            return ((x1 - x2).pow(2) + (y1 - y2).pow(2))
-        }
+        fun distance(
+            x1: Float,
+            x2: Float,
+            y1: Float,
+            y2: Float,
+        ): Float = ((x1 - x2).pow(2) + (y1 - y2).pow(2))
     }
 
     var chatHeads = ArrayList<ChatHead>()
@@ -171,21 +194,27 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
     var content = Content(context, mContentViewModel)
     private var close = Close(this)
 
-    private var motionTrackerParams = WindowManager.LayoutParams(
-        CHAT_HEAD_SIZE,
-        CHAT_HEAD_SIZE + 16,
-        getOverlayFlag(),
-        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-        PixelFormat.TRANSLUCENT
-    )
+    private var motionTrackerParams =
+        WindowManager.LayoutParams(
+            CHAT_HEAD_SIZE,
+            CHAT_HEAD_SIZE + 16,
+            getOverlayFlag(),
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            PixelFormat.TRANSLUCENT,
+        )
 
-    private var params = WindowManager.LayoutParams(
-        WindowManager.LayoutParams.MATCH_PARENT,
-        WindowManager.LayoutParams.MATCH_PARENT,
-        getOverlayFlag(),
-        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-        PixelFormat.TRANSLUCENT
-    )
+    private var params =
+        WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            getOverlayFlag(),
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            PixelFormat.TRANSLUCENT,
+        )
 
     init {
         params.gravity = Gravity.START or Gravity.TOP
@@ -216,12 +245,13 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
         }
     }
 
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        return if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean =
+        if (event.keyCode == KeyEvent.KEYCODE_BACK) {
             collapse()
             true
-        } else super.dispatchKeyEvent(event)
-    }
+        } else {
+            super.dispatchKeyEvent(event)
+        }
 
     fun setTop(chatHead: ChatHead?) {
         destroySpringChains()
@@ -279,7 +309,8 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
                                 if (collapsing) {
                                     element.springX.endValue = spring!!.endValue + index * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
                                 } else {
-                                    element.springX.currentValue = spring!!.currentValue + index * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
+                                    element.springX.currentValue =
+                                        spring!!.currentValue + index * CHAT_HEAD_PADDING * if (isOnRight) 1 else -1
                                 }
                             }
 
@@ -287,7 +318,7 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
                                 animatingChatHeadInExpandedView = false
                             }
                         }
-                    }
+                    },
                 )
                 verticalSpringChain!!.addSpring(
                     object : SimpleSpringListener() {
@@ -296,15 +327,13 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
                                 element.springY.currentValue = spring!!.currentValue
                             }
                         }
-                    }
+                    },
                 )
             }
         }
     }
 
-    fun isEmpty(): Boolean {
-        return chatHeads.isEmpty()
-    }
+    fun isEmpty(): Boolean = chatHeads.isEmpty()
 
     fun add(): ChatHead? {
         if (chatHeads.size > 0) {
@@ -375,7 +404,13 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
         val metrics = getScreenSize()
 
         if (topChatHead != null) {
-            val newX = if (isOnRight) metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble() else -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
+            val newX =
+                if (isOnRight) {
+                    metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
+                } else {
+                    -CHAT_HEAD_OUT_OF_SCREEN_X
+                        .toDouble()
+                }
             val newY = initialY.toDouble()
 
             topChatHead!!.springX.endValue = newX
@@ -433,7 +468,9 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
             it.springX.springConfig = SpringConfigs.NOT_DRAGGING
             it.springY.springConfig = SpringConfigs.NOT_DRAGGING
 
-            val x = metrics.widthPixels - topChatHead!!.params.width.toDouble() - index * (it.params.width + CHAT_HEAD_EXPANDED_PADDING).toDouble()
+            val x =
+                metrics.widthPixels - topChatHead!!.params.width.toDouble() -
+                    index * (it.params.width + CHAT_HEAD_EXPANDED_PADDING).toDouble()
             val y = CHAT_HEAD_EXPANDED_MARGIN_TOP.toDouble()
 
             if (animation) {
@@ -446,7 +483,11 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
         }
     }
 
-    fun onChatHeadSpringUpdate(chatHead: ChatHead, spring: Spring, totalVelocity: Int) {
+    fun onChatHeadSpringUpdate(
+        chatHead: ChatHead,
+        spring: Spring,
+        totalVelocity: Int,
+    ) {
         val metrics = getScreenSize()
 
         if (topChatHead != null && chatHead == topChatHead!!) {
@@ -461,16 +502,25 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
 
         // Moving content with active chat head
         var tmpChatHead: ChatHead? = null
-        if (collapsing) tmpChatHead = topChatHead!!
-        else if (chatHead == activeChatHead) tmpChatHead = chatHead
+        if (collapsing) {
+            tmpChatHead = topChatHead!!
+        } else if (chatHead == activeChatHead) {
+            tmpChatHead = chatHead
+        }
 
         if (tmpChatHead != null) {
             // Whether the content should follow chat head x
             val x = (if (animatingChatHeadInExpandedView) tmpChatHead.springX.endValue else tmpChatHead.springX.currentValue).toFloat()
 
-            content.x = x - metrics.widthPixels.toFloat() + chatHeads.indexOf(tmpChatHead) * (tmpChatHead.params.width + CHAT_HEAD_EXPANDED_PADDING) + tmpChatHead.params.width
+            content.x =
+                x - metrics.widthPixels.toFloat() + chatHeads.indexOf(
+                    tmpChatHead,
+                ) * (tmpChatHead.params.width + CHAT_HEAD_EXPANDED_PADDING) +
+                tmpChatHead.params.width
             content.y = tmpChatHead.springY.currentValue.toFloat() - CHAT_HEAD_EXPANDED_MARGIN_TOP
-            content.pivotX = metrics.widthPixels.toFloat() - chatHead.width / 2 - chatHeads.indexOf(tmpChatHead) * (tmpChatHead.params.width + CHAT_HEAD_EXPANDED_PADDING)
+            content.pivotX =
+                metrics.widthPixels.toFloat() - chatHead.width / 2 -
+                chatHeads.indexOf(tmpChatHead) * (tmpChatHead.params.width + CHAT_HEAD_EXPANDED_PADDING)
         }
 
         content.pivotY = chatHead.height.toFloat()
@@ -478,7 +528,13 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
         if (topChatHead != null) {
             val width = dpToPx(100f)
             val height = dpToPx(50f)
-            val r1 = Rectangle(close.x.toDouble() - if (isOnRight) dpToPx(32f) else width, close.y.toDouble() - height / 2, close.width.toDouble() + width, close.height.toDouble() + height)
+            val r1 =
+                Rectangle(
+                    close.x.toDouble() - if (isOnRight) dpToPx(32f) else width,
+                    close.y.toDouble() - height / 2,
+                    close.width.toDouble() + width,
+                    close.height.toDouble() + height,
+                )
 
             val x = topChatHead!!.springX.currentValue + topChatHead!!.params.width / 2
             val y = topChatHead!!.springY.currentValue + topChatHead!!.params.height / 2
@@ -503,7 +559,7 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
                     {
                         onClose()
                     },
-                    100
+                    100,
                 )
             }
         }
@@ -556,7 +612,10 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
         }
     }
 
-    override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+    override fun onTouch(
+        v: View?,
+        event: MotionEvent?,
+    ): Boolean {
         val metrics = getScreenSize()
 
         if (topChatHead == null) return true
@@ -602,7 +661,7 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
                     {
                         close.hide()
                     },
-                    100
+                    100,
                 )
 
                 if (closeCaptured) {
@@ -619,16 +678,21 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
                         motionTrackerParams.flags = motionTrackerParams.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                         VlogService.sInstance.windowManager.updateViewLayout(motionTracker, motionTrackerParams)
 
-                        params.flags = (params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()) or WindowManager.LayoutParams.FLAG_DIM_BEHIND and WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv() and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
+                        params.flags =
+                            (params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()) or
+                            WindowManager.LayoutParams.FLAG_DIM_BEHIND and
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv() and
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
                         VlogService.sInstance.windowManager.updateViewLayout(this, params)
 
                         activeChatHead = topChatHead
 
                         showContentRunnable?.let { handler.removeCallbacks(it) }
 
-                        showContentRunnable = Runnable {
-                            content.showContent()
-                        }
+                        showContentRunnable =
+                            Runnable {
+                                content.showContent()
+                            }
 
                         showContentRunnable?.let { handler.postDelayed(it, 200) }
                     }
@@ -643,20 +707,32 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
                     velocityTracker = null
 
                     if (xVelocity < -3500) {
-                        val newVelocity = ((-topChatHead!!.springX.currentValue - CHAT_HEAD_OUT_OF_SCREEN_X) * SpringConfigs.DRAGGING.friction)
+                        val newVelocity = (
+                            (-topChatHead!!.springX.currentValue - CHAT_HEAD_OUT_OF_SCREEN_X) *
+                                SpringConfigs.DRAGGING.friction
+                        )
                         maxVelocityX = newVelocity - 5000
-                        if (xVelocity > maxVelocityX)
+                        if (xVelocity > maxVelocityX) {
                             xVelocity = newVelocity - 500
+                        }
                     } else if (xVelocity > 3500) {
-                        val newVelocity = ((metrics.widthPixels - topChatHead!!.springX.currentValue - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X) * SpringConfigs.DRAGGING.friction)
+                        val newVelocity = (
+                            (
+                                metrics.widthPixels - topChatHead!!.springX.currentValue - topChatHead!!.width +
+                                    CHAT_HEAD_OUT_OF_SCREEN_X
+                            ) *
+                                SpringConfigs.DRAGGING.friction
+                        )
                         maxVelocityX = newVelocity + 5000
-                        if (maxVelocityX > xVelocity)
+                        if (maxVelocityX > xVelocity) {
                             xVelocity = newVelocity + 500
+                        }
                     } else if (yVelocity > 20 || yVelocity < -20) {
                         topChatHead!!.springX.springConfig = SpringConfigs.NOT_DRAGGING
 
                         if (topChatHead!!.x >= metrics.widthPixels / 2) {
-                            topChatHead!!.springX.endValue = metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
+                            topChatHead!!.springX.endValue =
+                                metrics.widthPixels - topChatHead!!.width + CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
                             isOnRight = true
                         } else {
                             topChatHead!!.springX.endValue = -CHAT_HEAD_OUT_OF_SCREEN_X.toDouble()
@@ -681,11 +757,12 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
                         }
                     }
 
-                    xVelocity = if (xVelocity < 0) {
-                        max(xVelocity - 1000.0, maxVelocityX)
-                    } else {
-                        min(xVelocity + 1000.0, maxVelocityX)
-                    }
+                    xVelocity =
+                        if (xVelocity < 0) {
+                            max(xVelocity - 1000.0, maxVelocityX)
+                        } else {
+                            min(xVelocity + 1000.0, maxVelocityX)
+                        }
 
                     initialVelocityX = xVelocity
                     initialVelocityY = yVelocity
@@ -705,10 +782,22 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
                 velocityTracker?.addMovement(event)
 
                 if (moving) {
-                    close.springX.endValue = (metrics.widthPixels / 2) + (((event.rawX + topChatHead!!.width / 2) / 7) - metrics.widthPixels / 2 / 7) - close.width.toDouble() / 2
-                    close.springY.endValue = (metrics.heightPixels - CLOSE_SIZE) + max(((event.rawY + close.height / 2) / 10) - metrics.heightPixels / 10, -dpToPx(30f).toFloat()) - dpToPx(60f).toDouble()
+                    close.springX.endValue =
+                        (metrics.widthPixels / 2) + (((event.rawX + topChatHead!!.width / 2) / 7) - metrics.widthPixels / 2 / 7) -
+                        close.width.toDouble() / 2
+                    close.springY.endValue =
+                        (metrics.heightPixels - CLOSE_SIZE) +
+                        max(((event.rawY + close.height / 2) / 10) - metrics.heightPixels / 10, -dpToPx(30f).toFloat()) -
+                        dpToPx(60f).toDouble()
 
-                    if (distance(close.springX.endValue.toFloat() + close.width / 2, event.rawX, close.springY.endValue.toFloat() + close.height / 2, event.rawY) < CLOSE_CAPTURE_DISTANCE.toDouble().pow(2)) {
+                    if (distance(
+                            close.springX.endValue.toFloat() + close.width / 2,
+                            event.rawX,
+                            close.springY.endValue.toFloat() + close.height / 2,
+                            event.rawY,
+                        ) <
+                        CLOSE_CAPTURE_DISTANCE.toDouble().pow(2)
+                    ) {
                         topChatHead!!.springX.springConfig = SpringConfigs.CAPTURING
                         topChatHead!!.springY.springConfig = SpringConfigs.CAPTURING
 
@@ -732,7 +821,7 @@ internal class ChatHeads(context: Context, val mContentViewModel: ContentViewMod
                             {
                                 movingOutOfClose = false
                             },
-                            100
+                            100,
                         )
                     } else if (!movingOutOfClose) {
                         topChatHead!!.springX.springConfig = SpringConfigs.DRAGGING

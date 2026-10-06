@@ -29,25 +29,39 @@ import android.content.Context
 /**
  * No-op implementation.
  */
-class Vlog private constructor(val mApplicationContext: Context) {
-
+class Vlog private constructor(
+    val mApplicationContext: Context,
+) {
     fun start() {}
 
     fun stop() {}
 
-    fun isEnabled(): Boolean {
-        return false
-    }
+    fun isEnabled(): Boolean = false
 
-    fun v(tag: String, msg: String) {}
+    fun v(
+        tag: String,
+        msg: String,
+    ) {}
 
-    fun d(tag: String, msg: String) {}
+    fun d(
+        tag: String,
+        msg: String,
+    ) {}
 
-    fun i(tag: String, msg: String) {}
+    fun i(
+        tag: String,
+        msg: String,
+    ) {}
 
-    fun w(tag: String, msg: String) {}
+    fun w(
+        tag: String,
+        msg: String,
+    ) {}
 
-    fun e(tag: String, msg: String) {}
+    fun e(
+        tag: String,
+        msg: String,
+    ) {}
 
     companion object {
         private var instance: Vlog? = null

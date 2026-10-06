@@ -2,9 +2,14 @@ package com.girish.vlogsample.logger
 
 import com.android.girish.vlog.Vlog
 
-class VlogLogger(private val vlog: Vlog) : AbstractLogger() {
-
-    override fun write(@LogPriority priority: Int, tag: String, message: String) {
+class VlogLogger(
+    private val vlog: Vlog,
+) : AbstractLogger() {
+    override fun write(
+        @LogPriority priority: Int,
+        tag: String,
+        message: String,
+    ) {
         if (!vlog.isEnabled()) {
             return
         }

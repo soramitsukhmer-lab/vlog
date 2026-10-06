@@ -23,17 +23,20 @@ import com.facebook.rebound.SpringListener
 import com.facebook.rebound.SpringSystem
 import kotlin.math.pow
 
-internal class ChatHead(var chatHeads: ChatHeads, mContentViewModel: ContentViewModel) :
-    FrameLayout(chatHeads.context),
+internal class ChatHead(
+    var chatHeads: ChatHeads,
+    mContentViewModel: ContentViewModel,
+) : FrameLayout(chatHeads.context),
     View.OnTouchListener,
     SpringListener {
-    var params: WindowManager.LayoutParams = WindowManager.LayoutParams(
-        WindowManager.LayoutParams.WRAP_CONTENT,
-        WindowManager.LayoutParams.WRAP_CONTENT,
-        getOverlayFlag(),
-        0,
-        PixelFormat.TRANSLUCENT
-    )
+    var params: WindowManager.LayoutParams =
+        WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            getOverlayFlag(),
+            0,
+            PixelFormat.TRANSLUCENT,
+        )
 
     var springSystem: SpringSystem = SpringSystem.create()
 
@@ -66,7 +69,9 @@ internal class ChatHead(var chatHeads: ChatHeads, mContentViewModel: ContentView
         }
 
     override fun onSpringEndStateChange(spring: Spring?) = Unit
+
     override fun onSpringAtRest(spring: Spring?) = Unit
+
     override fun onSpringActivate(spring: Spring?) = Unit
 
     init {
@@ -87,7 +92,7 @@ internal class ChatHead(var chatHeads: ChatHeads, mContentViewModel: ContentView
                 override fun onSpringUpdate(spring: Spring) {
                     x = spring.currentValue.toFloat()
                 }
-            }
+            },
         )
 
         springX.springConfig = SpringConfigs.NOT_DRAGGING
@@ -98,7 +103,7 @@ internal class ChatHead(var chatHeads: ChatHeads, mContentViewModel: ContentView
                 override fun onSpringUpdate(spring: Spring) {
                     y = spring.currentValue.toFloat()
                 }
-            }
+            },
         )
         springY.springConfig = SpringConfigs.NOT_DRAGGING
         springY.addListener(this)
@@ -155,7 +160,10 @@ internal class ChatHead(var chatHeads: ChatHeads, mContentViewModel: ContentView
         chatHeads.onChatHeadSpringUpdate(this, spring, totalVelocity)
     }
 
-    override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+    override fun onTouch(
+        v: View?,
+        event: MotionEvent?,
+    ): Boolean {
         val currentChatHead = chatHeads.chatHeads.find { it == v }!!
 
         val metrics = getScreenSize()
@@ -178,7 +186,9 @@ internal class ChatHead(var chatHeads: ChatHeads, mContentViewModel: ContentView
                         chatHeads.activeChatHead = currentChatHead
                     }
                 } else {
-                    springX.endValue = metrics.widthPixels - width - chatHeads.chatHeads.indexOf(this) * (width + ChatHeads.CHAT_HEAD_EXPANDED_PADDING).toDouble()
+                    springX.endValue =
+                        metrics.widthPixels - width -
+                        chatHeads.chatHeads.indexOf(this) * (width + ChatHeads.CHAT_HEAD_EXPANDED_PADDING).toDouble()
                     springY.endValue = ChatHeads.CHAT_HEAD_EXPANDED_MARGIN_TOP.toDouble()
 
                     if (this == chatHeads.activeChatHead) {
@@ -192,7 +202,9 @@ internal class ChatHead(var chatHeads: ChatHeads, mContentViewModel: ContentView
                 moving = false
             }
             MotionEvent.ACTION_MOVE -> {
-                if (ChatHeads.distance(initialTouchX, event.rawX, initialTouchY, event.rawY) > ChatHeads.CHAT_HEAD_DRAG_TOLERANCE.pow(2) && !moving) {
+                if (ChatHeads.distance(initialTouchX, event.rawX, initialTouchY, event.rawY) > ChatHeads.CHAT_HEAD_DRAG_TOLERANCE.pow(2) &&
+                    !moving
+                ) {
                     moving = true
 
                     if (this == chatHeads.activeChatHead) {

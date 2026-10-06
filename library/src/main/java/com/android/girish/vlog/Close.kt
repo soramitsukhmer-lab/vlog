@@ -18,14 +18,19 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringSystem
 
-internal class Close(var chatHeads: ChatHeads) : View(chatHeads.context) {
-    private var params = WindowManager.LayoutParams(
-        ChatHeads.CLOSE_SIZE + ChatHeads.CLOSE_ADDITIONAL_SIZE,
-        ChatHeads.CLOSE_SIZE + ChatHeads.CLOSE_ADDITIONAL_SIZE,
-        getOverlayFlag(),
-        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-        PixelFormat.TRANSLUCENT
-    )
+internal class Close(
+    var chatHeads: ChatHeads,
+) : View(chatHeads.context) {
+    private var params =
+        WindowManager.LayoutParams(
+            ChatHeads.CLOSE_SIZE + ChatHeads.CLOSE_ADDITIONAL_SIZE,
+            ChatHeads.CLOSE_SIZE + ChatHeads.CLOSE_ADDITIONAL_SIZE,
+            getOverlayFlag(),
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            PixelFormat.TRANSLUCENT,
+        )
 
     private var gradientParams = FrameLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, dpToPx(150f))
 
@@ -42,8 +47,20 @@ internal class Close(var chatHeads: ChatHeads) : View(chatHeads.context) {
 
     var hidden = true
 
-    private var bitmapBg = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(VlogService.sInstance.resources, R.drawable.close_bg), ChatHeads.CLOSE_SIZE, ChatHeads.CLOSE_SIZE, false)!!
-    private val bitmapClose = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(VlogService.sInstance.resources, R.drawable.close), dpToPx(28f), dpToPx(28f), false)!!
+    private var bitmapBg =
+        Bitmap.createScaledBitmap(
+            BitmapFactory.decodeResource(VlogService.sInstance.resources, R.drawable.close_bg),
+            ChatHeads.CLOSE_SIZE,
+            ChatHeads.CLOSE_SIZE,
+            false,
+        )!!
+    private val bitmapClose =
+        Bitmap.createScaledBitmap(
+            BitmapFactory.decodeResource(VlogService.sInstance.resources, R.drawable.close),
+            dpToPx(28f),
+            dpToPx(28f),
+            false,
+        )!!
 
     fun hide() {
         val metrics = getScreenSize()
@@ -94,7 +111,7 @@ internal class Close(var chatHeads: ChatHeads) : View(chatHeads.context) {
 
                     onPositionUpdate()
                 }
-            }
+            },
         )
 
         springX.addListener(
@@ -104,16 +121,25 @@ internal class Close(var chatHeads: ChatHeads) : View(chatHeads.context) {
 
                     onPositionUpdate()
                 }
-            }
+            },
         )
 
         springScale.addListener(
             object : SimpleSpringListener() {
                 override fun onSpringUpdate(spring: Spring) {
-                    bitmapBg = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(VlogService.sInstance.resources, R.drawable.close_bg), (spring.currentValue + ChatHeads.CLOSE_SIZE).toInt(), (spring.currentValue + ChatHeads.CLOSE_SIZE).toInt(), false)
+                    bitmapBg =
+                        Bitmap.createScaledBitmap(
+                            BitmapFactory.decodeResource(VlogService.sInstance.resources, R.drawable.close_bg),
+                            (
+                                spring.currentValue +
+                                    ChatHeads.CLOSE_SIZE
+                            ).toInt(),
+                            (spring.currentValue + ChatHeads.CLOSE_SIZE).toInt(),
+                            false,
+                        )
                     invalidate()
                 }
-            }
+            },
         )
 
         springAlpha.addListener(
@@ -121,7 +147,7 @@ internal class Close(var chatHeads: ChatHeads) : View(chatHeads.context) {
                 override fun onSpringUpdate(spring: Spring) {
                     gradient.alpha = spring.currentValue.toFloat()
                 }
-            }
+            },
         )
 
         springScale.springConfig = SpringConfigs.CLOSE_SCALE

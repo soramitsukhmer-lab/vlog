@@ -12,17 +12,23 @@ import com.android.girish.vlog.VlogAdapter.VlogViewHolder
 internal class VlogAdapter : RecyclerView.Adapter<VlogViewHolder>() {
     private var mFilteredLogList: List<VlogModel>?
     private var mExpandedModel: VlogModel? = null
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VlogViewHolder {
-        return VlogViewHolder(
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): VlogViewHolder =
+        VlogViewHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.list_item_log,
                 parent,
-                false
-            )
+                false,
+            ),
         )
-    }
 
-    override fun onBindViewHolder(holder: VlogViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: VlogViewHolder,
+        position: Int,
+    ) {
         val model = mFilteredLogList!![position]
         val priority = model.logPriority
         val errorColor = Color.parseColor("#990000") // red
@@ -46,12 +52,13 @@ internal class VlogAdapter : RecyclerView.Adapter<VlogViewHolder>() {
         holder.logTag.text = getLogPriorityInitials(model.logPriority) + "/" + model.tag + ": "
         val isExpanded = model == mExpandedModel
         holder.logMessage.text =
-            if (isExpanded)
+            if (isExpanded) {
                 model.logMessage
-            else if (model.logMessage.length > 50)
+            } else if (model.logMessage.length > 50) {
                 model.logMessage.substring(0, 49) + "..."
-            else
+            } else {
                 model.logMessage
+            }
 
         holder.expandCollapseArrow.setImageResource(if (isExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down)
         holder.itemView.setOnClickListener {
@@ -61,8 +68,8 @@ internal class VlogAdapter : RecyclerView.Adapter<VlogViewHolder>() {
         }
     }
 
-    private fun getLogPriorityInitials(logPriority: Int): String {
-        return when (logPriority) {
+    private fun getLogPriorityInitials(logPriority: Int): String =
+        when (logPriority) {
             VlogModel.DEBUG -> "D"
             VlogModel.ERROR -> "E"
             VlogModel.INFO -> "I"
@@ -70,13 +77,12 @@ internal class VlogAdapter : RecyclerView.Adapter<VlogViewHolder>() {
             VlogModel.WARN -> "W"
             else -> ""
         }
-    }
 
-    override fun getItemCount(): Int {
-        return if (mFilteredLogList != null) mFilteredLogList!!.size else 0
-    }
+    override fun getItemCount(): Int = if (mFilteredLogList != null) mFilteredLogList!!.size else 0
 
-    inner class VlogViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class VlogViewHolder(
+        itemView: View,
+    ) : RecyclerView.ViewHolder(itemView) {
         var logTag: TextView
         var logMessage: TextView
         var expandCollapseArrow: ImageView

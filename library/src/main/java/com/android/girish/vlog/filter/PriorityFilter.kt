@@ -8,10 +8,11 @@ import com.android.girish.vlog.VlogModel.LogPriority
  * @constructor Create empty Priority filter
  */
 internal class PriorityFilter : Criteria<VlogModel> {
-
     @LogPriority private var mPriority: Int = VlogModel.VERBOSE
 
-    fun setPriority(@LogPriority constraint: Int) {
+    fun setPriority(
+        @LogPriority constraint: Int,
+    ) {
         mPriority = constraint
     }
 

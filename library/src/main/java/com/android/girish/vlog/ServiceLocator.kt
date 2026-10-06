@@ -4,7 +4,6 @@ package com.android.girish.vlog
 *  A service locator to provide dependencies.
 * */
 internal object ServiceLocator {
-
     private var mVlogRepository: VlogRepository? = null
     private var mContentViewModel: ContentViewModel? = null
 

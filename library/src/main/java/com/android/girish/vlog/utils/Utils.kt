@@ -7,21 +7,13 @@ import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.WindowManager
 
-fun getOverlayFlag(): Int {
-    return WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-}
+fun getOverlayFlag(): Int = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
 
-fun getScreenSize(): DisplayMetrics {
-    return Resources.getSystem().displayMetrics
-}
+fun getScreenSize(): DisplayMetrics = Resources.getSystem().displayMetrics
 
-fun dpToPx(dp: Float): Int {
-    return (dp * Resources.getSystem().displayMetrics.density).toInt()
-}
+fun dpToPx(dp: Float): Int = (dp * Resources.getSystem().displayMetrics.density).toInt()
 
-fun spToPx(sp: Float): Float {
-    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, Resources.getSystem().displayMetrics)
-}
+fun spToPx(sp: Float): Float = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, Resources.getSystem().displayMetrics)
 
 fun runOnMainLoop(fn: () -> Unit) {
     Handler(Looper.getMainLooper()).post {
@@ -29,13 +21,15 @@ fun runOnMainLoop(fn: () -> Unit) {
     }
 }
 
-fun getAvatarUrl(url: String?, fallbackUrl: String): String {
-    return if (url != null) {
+fun getAvatarUrl(
+    url: String?,
+    fallbackUrl: String,
+): String =
+    if (url != null) {
         url
     } else {
         fallbackUrl
     }
-}
 
 fun debug(txt: String) {
     println("asdf: $txt")

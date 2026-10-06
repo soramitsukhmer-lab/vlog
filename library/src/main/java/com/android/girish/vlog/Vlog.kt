@@ -35,30 +35,36 @@ import android.util.Log
 import com.android.girish.vlog.VlogService.LocalBinder
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Vlog private constructor(val mApplicationContext: Context) {
+class Vlog private constructor(
+    val mApplicationContext: Context,
+) {
     private val isEnabled = AtomicBoolean(false)
     private var mServiceIntent: Intent? = null
     private var mService: VlogService? = null
     private val mVlogRepository = ServiceLocator.provideVlogRepository()
     private val mBound = AtomicBoolean(false)
-    private val mServerConn: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName, binder: IBinder) {
-            val service = binder as LocalBinder
-            mService = service.getService()
-            mBound.set(true)
-            Log.d(TAG, "Service connected")
-            if (isEnabled.get() && mBound.get()) {
-                Log.d(TAG, "Displaying Vlog Bubble")
-                mService!!.addChat()
+    private val mServerConn: ServiceConnection =
+        object : ServiceConnection {
+            override fun onServiceConnected(
+                name: ComponentName,
+                binder: IBinder,
+            ) {
+                val service = binder as LocalBinder
+                mService = service.getService()
+                mBound.set(true)
+                Log.d(TAG, "Service connected")
+                if (isEnabled.get() && mBound.get()) {
+                    Log.d(TAG, "Displaying Vlog Bubble")
+                    mService!!.addChat()
+                }
+            }
+
+            override fun onServiceDisconnected(name: ComponentName) {
+                Log.d(TAG, "Service disconnected")
+                mService = null
+                mBound.set(false)
             }
         }
-
-        override fun onServiceDisconnected(name: ComponentName) {
-            Log.d(TAG, "Service disconnected")
-            mService = null
-            mBound.set(false)
-        }
-    }
 
     private fun startService() {
         mServiceIntent = Intent(mApplicationContext, VlogService::class.java)
@@ -69,9 +75,7 @@ class Vlog private constructor(val mApplicationContext: Context) {
         }
     }
 
-    fun isEnabled(): Boolean {
-        return isEnabled.get()
-    }
+    fun isEnabled(): Boolean = isEnabled.get()
 
     private fun requestDrawOverPermission() {
         val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${mApplicationContext.packageName}"))
@@ -79,9 +83,7 @@ class Vlog private constructor(val mApplicationContext: Context) {
         mApplicationContext.startActivity(intent)
     }
 
-    private fun canDrawOverOtherApp(): Boolean {
-        return Settings.canDrawOverlays(mApplicationContext)
-    }
+    private fun canDrawOverOtherApp(): Boolean = Settings.canDrawOverlays(mApplicationContext)
 
     private fun feed(model: VlogModel) {
         if (!isEnabled.get()) {
@@ -126,27 +128,42 @@ class Vlog private constructor(val mApplicationContext: Context) {
         }
     }
 
-    fun v(tag: String, msg: String) {
+    fun v(
+        tag: String,
+        msg: String,
+    ) {
         val model = VlogModel(VlogModel.VERBOSE, tag, msg)
         feed(model)
     }
 
-    fun d(tag: String, msg: String) {
+    fun d(
+        tag: String,
+        msg: String,
+    ) {
         val model = VlogModel(VlogModel.DEBUG, tag, msg)
         feed(model)
     }
 
-    fun i(tag: String, msg: String) {
+    fun i(
+        tag: String,
+        msg: String,
+    ) {
         val model = VlogModel(VlogModel.INFO, tag, msg)
         feed(model)
     }
 
-    fun w(tag: String, msg: String) {
+    fun w(
+        tag: String,
+        msg: String,
+    ) {
         val model = VlogModel(VlogModel.WARN, tag, msg)
         feed(model)
     }
 
-    fun e(tag: String, msg: String) {
+    fun e(
+        tag: String,
+        msg: String,
+    ) {
         val model = VlogModel(VlogModel.ERROR, tag, msg)
         feed(model)
     }

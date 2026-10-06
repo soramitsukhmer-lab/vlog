@@ -11,10 +11,10 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import java.io.IOException
-import java.net.HttpURLConnection
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
+import java.io.IOException
+import java.net.HttpURLConnection
 
 fun Bitmap.addBackground(color: Int): Bitmap {
     val newBitmap = createBitmap(width, height)
@@ -65,15 +65,14 @@ fun Bitmap.addShadow(): Bitmap {
     return bmOut
 }
 
-fun Bitmap.scaleToSize(size: Int): Bitmap {
-    return this.scale(size, size)
-}
+fun Bitmap.scaleToSize(size: Int): Bitmap = this.scale(size, size)
 
 fun fetchBitmap(urlStr: String): Bitmap? {
     try {
         val url = java.net.URL(urlStr)
-        val connection = url
-            .openConnection() as HttpURLConnection
+        val connection =
+            url
+                .openConnection() as HttpURLConnection
         connection.doInput = true
         connection.connect()
         val input = connection.inputStream

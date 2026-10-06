@@ -11,7 +11,6 @@ import com.girish.vlogsample.logger.LogService
 import com.google.android.material.snackbar.Snackbar
 
 class TestLoginActivity : AppCompatActivity() {
-
     private lateinit var mLogger: AbstractLogger
     private val TAG = "LoginActivity"
 

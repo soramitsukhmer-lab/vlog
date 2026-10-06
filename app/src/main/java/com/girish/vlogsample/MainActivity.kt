@@ -20,7 +20,6 @@ import com.girish.vlogsample.logger.AbstractLogger.Companion.WARN
 import com.girish.vlogsample.logger.LogService
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var mVlog: Vlog
     private lateinit var mLogger: AbstractLogger
 

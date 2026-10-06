@@ -29,12 +29,18 @@ import android.util.Log
 import com.android.girish.vlog.Vlog
 import timber.log.Timber
 
-class VlogTree(context: Context) : Timber.Tree() {
-
+class VlogTree(
+    context: Context,
+) : Timber.Tree() {
     private val vlog: Vlog = Vlog.getInstance(context)
     private val defaultTag = context.packageName
 
-    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+    override fun log(
+        priority: Int,
+        tag: String?,
+        message: String,
+        t: Throwable?,
+    ) {
         val tag = tag ?: defaultTag
 
         when (priority) {

@@ -2,7 +2,6 @@ package com.android.girish.vlog.filter
 import com.android.girish.vlog.VlogModel
 
 internal class KeywordFilter : Criteria<VlogModel> {
-
     var mKeyword: String = ""
 
     fun setKeyword(keyword: String) {
@@ -18,7 +17,6 @@ internal class KeywordFilter : Criteria<VlogModel> {
         val filteredLogs = ArrayList<VlogModel>()
 
         for (item in input) {
-
             val normalizedLog = item.logMessage.lowercase().trim()
             val normalizedTag = item.tag.lowercase().trim()
 

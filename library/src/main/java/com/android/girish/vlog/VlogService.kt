@@ -58,7 +58,7 @@ internal class VlogService : Service() {
         val intentFilter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
         // registerReceiver(innerReceiver, intentFilter)
 
-        /* If you wanna keep showing foreground notifications then uncomment the below method */
+        // If you wanna keep showing foreground notifications then uncomment the below method
         createForegroundNotification()
     }
 
@@ -71,23 +71,29 @@ internal class VlogService : Service() {
             notificationIntent, 0
         )*/
 
-        val notification = NotificationCompat.Builder(this, channelId)
-            // .setOngoing(true)
-            .setContentTitle("Vlog bubble is active")
-            .setSmallIcon(R.drawable.ic_vlog_notification)
-            .setCategory(Notification.CATEGORY_SERVICE)
-            .build()
+        val notification =
+            NotificationCompat
+                .Builder(this, channelId)
+                // .setOngoing(true)
+                .setContentTitle("Vlog bubble is active")
+                .setSmallIcon(R.drawable.ic_vlog_notification)
+                .setCategory(Notification.CATEGORY_SERVICE)
+                .build()
         // .setContentIntent(pendingIntent).build()
 
         startForeground(101, notification)
     }
 
-    private fun createNotificationChannel(channelId: String, channelName: String): String {
-        val chan = NotificationChannel(
-            channelId,
-            channelName,
-            NotificationManager.IMPORTANCE_NONE
-        )
+    private fun createNotificationChannel(
+        channelId: String,
+        channelName: String,
+    ): String {
+        val chan =
+            NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_NONE,
+            )
         chan.lightColor = Color.BLUE
         chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
         val service = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -98,16 +104,19 @@ internal class VlogService : Service() {
     override fun onDestroy() {
         Log.d(TAG, "Destroying Service")
         cleanUp()
+        if (::chatHeads.isInitialized) {
+            chatHeads.content.release()
+        }
         super.onDestroy()
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return binder
-    }
+    override fun onBind(intent: Intent?): IBinder? = binder
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return START_STICKY
-    }
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int = START_STICKY
 
     fun cleanUp() {
         chatHeads.removeAll()
@@ -116,7 +125,10 @@ internal class VlogService : Service() {
 }
 
 internal class InnerReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         val action = intent.action
         if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS == action) {
             val reason = intent.getStringExtra("reason")

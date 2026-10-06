@@ -4,7 +4,6 @@ import android.content.Context
 import com.android.girish.vlog.Vlog
 
 object LogService {
-
     private var mVlog: Vlog? = null
     private var mLogger: AbstractLogger? = null
 
@@ -36,7 +35,5 @@ object LogService {
         return logcatLogger
     }
 
-    private fun createVlog(applicationContext: Context): Vlog {
-        return Vlog.getInstance(applicationContext)
-    }
+    private fun createVlog(applicationContext: Context): Vlog = Vlog.getInstance(applicationContext)
 }
