@@ -25,6 +25,9 @@
 package com.android.girish.vlog
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -111,6 +114,30 @@ class LogContentScreenTest {
 
         assertEquals(3, selectedIndex)
         composeRule.onNodeWithText("Warn").assertIsDisplayed()
+    }
+
+    @Test
+    fun tappingOutsideTheFilterFieldClearsItsFocus() {
+        setScreen()
+        val filterField = composeRule.onNode(hasSetTextAction())
+
+        filterField.performTextInput("surface")
+        filterField.assertIsFocused()
+
+        composeRule.onNodeWithText("Sample App v1.2").performClick()
+
+        filterField.assertIsNotFocused()
+    }
+
+    @Test
+    fun tappingALogClearsTheFilterFieldFocus() {
+        setScreen()
+        val filterField = composeRule.onNode(hasSetTextAction())
+
+        filterField.performTextInput("surface")
+        composeRule.onNodeWithText("I/Surface: ").performClick()
+
+        filterField.assertIsNotFocused()
     }
 
     @Test

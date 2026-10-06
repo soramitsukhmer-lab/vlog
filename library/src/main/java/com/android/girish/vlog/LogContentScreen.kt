@@ -27,6 +27,7 @@ package com.android.girish.vlog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,6 +58,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
@@ -95,9 +99,18 @@ internal fun LogContentScreen(
     // Only one log is expanded at a time, logs have no equality so this is an identity match
     var expandedLog by remember { mutableStateOf<VlogModel?>(null) }
 
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val dismissKeyboard = {
+        focusManager.clearFocus()
+        keyboardController?.hide()
+    }
+
     Column(
         modifier
             .fillMaxSize()
+            // Taps that no child consumes (header, empty space) dismiss the keyboard
+            .pointerInput(Unit) { detectTapGestures { dismissKeyboard() } }
             .background(
                 MaterialTheme.colorScheme.surface,
                 RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp),
@@ -114,7 +127,10 @@ internal fun LogContentScreen(
                 LogItem(
                     log = log,
                     isExpanded = isExpanded,
-                    onClick = { expandedLog = if (isExpanded) null else log },
+                    onClick = {
+                        dismissKeyboard()
+                        expandedLog = if (isExpanded) null else log
+                    },
                 )
                 HorizontalDivider()
             }
