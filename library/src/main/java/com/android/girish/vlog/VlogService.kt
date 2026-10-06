@@ -10,11 +10,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.view.WindowManager
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 
 internal class VlogService : Service() {
@@ -65,12 +63,7 @@ internal class VlogService : Service() {
     }
 
     private fun createForegroundNotification() {
-        val channelId =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                createNotificationChannel("Vlog", "Vlog service")
-            } else {
-                ""
-            }
+        val channelId = createNotificationChannel("Vlog", "Vlog service")
 
         /*val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
@@ -81,7 +74,7 @@ internal class VlogService : Service() {
         val notification = NotificationCompat.Builder(this, channelId)
             // .setOngoing(true)
             .setContentTitle("Vlog bubble is active")
-            // .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_vlog_notification)
             .setCategory(Notification.CATEGORY_SERVICE)
             .build()
         // .setContentIntent(pendingIntent).build()
@@ -89,7 +82,6 @@ internal class VlogService : Service() {
         startForeground(101, notification)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel(channelId: String, channelName: String): String {
         val chan = NotificationChannel(
             channelId,

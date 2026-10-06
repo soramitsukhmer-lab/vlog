@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.view.WindowManager
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.ArrayAdapter
@@ -22,6 +21,7 @@ import com.android.girish.vlog.VlogModel.Companion.INFO
 import com.android.girish.vlog.VlogModel.Companion.VERBOSE
 import com.android.girish.vlog.VlogModel.Companion.WARN
 import com.android.girish.vlog.VlogModel.LogPriority
+import com.android.girish.vlog.utils.getOverlayFlag
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringSystem
@@ -104,7 +104,7 @@ internal class Content(context: Context, val mContentViewModel: ContentViewModel
             "Cancel"
         ) { dialog, _ -> dialog?.dismiss() }
         val dialog: AlertDialog = builder.create()
-        dialog.window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
+        dialog.window?.setType(getOverlayFlag())
         dialog.show()
     }
 

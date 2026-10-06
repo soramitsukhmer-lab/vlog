@@ -29,7 +29,6 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.ServiceConnection
 import android.net.Uri
-import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
@@ -81,10 +80,6 @@ class Vlog private constructor(val mApplicationContext: Context) {
     }
 
     private fun canDrawOverOtherApp(): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true
-        }
-
         return Settings.canDrawOverlays(mApplicationContext)
     }
 
