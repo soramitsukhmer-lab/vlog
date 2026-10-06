@@ -43,6 +43,8 @@ class Vlog private constructor(
     private var mService: VlogService? = null
     private val mVlogRepository = ServiceLocator.provideVlogRepository()
     private val mBound = AtomicBoolean(false)
+    private val mBubbleController by lazy { BubbleController(mApplicationContext) }
+    private var activeMode: Mode? = null
     private val mServerConn: ServiceConnection =
         object : ServiceConnection {
             override fun onServiceConnected(
@@ -94,8 +96,18 @@ class Vlog private constructor(
     }
 
     // TODO: pass the context once, introduce an initializer or use builder pattern.
-    fun start() {
-        if (!canDrawOverOtherApp()) {
+
+    /**
+     * Starts Vlog.
+     *
+     * @param mode how the log viewer is shown. [Mode.BUBBLE] falls back to [Mode.OVERLAY] when
+     * notification bubbles are not available.
+     */
+    @JvmOverloads
+    fun start(mode: Mode = Mode.OVERLAY) {
+        val resolvedMode = resolveMode(mode)
+
+        if (resolvedMode == Mode.OVERLAY && !canDrawOverOtherApp()) {
             requestDrawOverPermission()
             Log.d(TAG, "Please grant Vlog permission to draw over other apps")
             return
@@ -106,10 +118,22 @@ class Vlog private constructor(
             Log.d(TAG, "Vlog is already started")
             return
         }
-        Log.d(TAG, "Initializing Vlog")
-        startService()
+        Log.d(TAG, "Initializing Vlog in $resolvedMode mode")
+        activeMode = resolvedMode
+        when (resolvedMode) {
+            Mode.BUBBLE -> mBubbleController.show()
+            Mode.OVERLAY -> startService()
+        }
 
         // initialize other resources if any
+    }
+
+    private fun resolveMode(requested: Mode): Mode {
+        if (requested == Mode.BUBBLE && !mBubbleController.isSupported()) {
+            Log.d(TAG, "Notification bubbles are not available, falling back to overlay mode")
+            return Mode.OVERLAY
+        }
+        return requested
     }
 
     fun stop() {
@@ -119,7 +143,10 @@ class Vlog private constructor(
         }
         Log.d(TAG, "Stopping Vlog")
         isEnabled.set(false)
-        if (mServiceIntent != null) {
+        if (activeMode == Mode.BUBBLE) {
+            mBubbleController.dismiss()
+            mVlogRepository.reset()
+        } else if (mServiceIntent != null) {
             mService!!.cleanUp()
             mVlogRepository.reset()
             mApplicationContext.unbindService(mServerConn)
@@ -166,6 +193,17 @@ class Vlog private constructor(
     ) {
         val model = VlogModel(VlogModel.ERROR, tag, msg)
         feed(model)
+    }
+
+    /**
+     * How the log viewer is shown.
+     */
+    enum class Mode {
+        /** A draggable chat head drawn over other apps. Needs the draw over other apps permission. */
+        OVERLAY,
+
+        /** A system notification bubble (Android 11+). Needs notifications and bubbles to be allowed for the app. */
+        BUBBLE,
     }
 
     companion object {

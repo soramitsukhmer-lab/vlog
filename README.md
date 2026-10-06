@@ -64,6 +64,13 @@ vlog.stop()
 vlog.isEnabled() // returns true if vlog.start() was called
 ```
 
+### Bubble mode
+By default Vlog draws a chat head over other apps and needs the "draw over other apps" permission. Alternatively it can use the Android notification bubble API, which needs no overlay permission:
+```kotlin
+vlog.start(Vlog.Mode.BUBBLE)
+```
+Bubble mode requires Android 11+, the user allowing bubbles for your app, and notifications being allowed. On Android 13+ your app must request the `POST_NOTIFICATIONS` runtime permission itself. If bubbles are not available Vlog falls back to the overlay mode.
+
 ### Integrate with Timber
 [Timber](https://github.com/JakeWharton/timber) is a popular logging library. Timber is extensible therefore Vlog can be seamlessly integrated alongside Timber. Add a behavior through `Tree` instance and plant the instance by calling `Timber.plant`. For more details, check the [timber sample module](https://github.com/girish3/Vlog/tree/master/timber-sample/src/main/java/com/example/timber) in this repo.
 

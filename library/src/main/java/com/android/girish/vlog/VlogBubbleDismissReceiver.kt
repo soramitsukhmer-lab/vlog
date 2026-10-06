@@ -24,63 +24,18 @@
 
 package com.android.girish.vlog
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 
 /**
- * No-op implementation.
+ * Stops Vlog when the user dismisses the bubble.
  */
-class Vlog private constructor(
-    val mApplicationContext: Context,
-) {
-    @JvmOverloads
-    fun start(mode: Mode = Mode.OVERLAY) {}
-
-    fun stop() {}
-
-    fun isEnabled(): Boolean = false
-
-    fun v(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun d(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun i(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun w(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun e(
-        tag: String,
-        msg: String,
-    ) {}
-
-    enum class Mode {
-        OVERLAY,
-        BUBBLE,
-    }
-
-    companion object {
-        private var instance: Vlog? = null
-
-        @JvmStatic
-        fun getInstance(context: Context): Vlog {
-            synchronized(this) {
-                if (instance == null) {
-                    instance = Vlog(context)
-                }
-
-                return instance!!
-            }
-        }
+internal class VlogBubbleDismissReceiver : BroadcastReceiver() {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
+        Vlog.getInstance(context.applicationContext).stop()
     }
 }

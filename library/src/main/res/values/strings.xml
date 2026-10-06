@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Vlog</string>
     <string name="select_priority">Log Priority</string>
+    <string name="vlog_bubble_channel_name">Vlog bubble</string>
+    <string name="vlog_bubble_title">Vlog</string>
+    <string name="vlog_bubble_message">Tap the bubble to view logs</string>
 </resources>

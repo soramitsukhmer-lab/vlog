@@ -16,12 +16,6 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.android.girish.vlog.VlogModel.Companion.DEBUG
-import com.android.girish.vlog.VlogModel.Companion.ERROR
-import com.android.girish.vlog.VlogModel.Companion.INFO
-import com.android.girish.vlog.VlogModel.Companion.VERBOSE
-import com.android.girish.vlog.VlogModel.Companion.WARN
-import com.android.girish.vlog.VlogModel.LogPriority
 import com.android.girish.vlog.utils.getOverlayFlag
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
@@ -123,7 +117,7 @@ internal class Content(
             )
         builder.setAdapter(arrayAdapter) { _, selectedIndex ->
             logPriorityTxtVw.text = priorityList[selectedIndex]
-            mContentViewModel.onPrioritySet(getLogPriority(selectedIndex))
+            mContentViewModel.onPriorityIndexSelected(selectedIndex)
         }
         builder.setPositiveButton(
             "Cancel",
@@ -131,20 +125,6 @@ internal class Content(
         val dialog: AlertDialog = builder.create()
         dialog.window?.setType(getOverlayFlag())
         dialog.show()
-    }
-
-    private fun getLogPriority(selectedIndex: Int): Int {
-        @LogPriority var priority: Int = VERBOSE
-
-        when (selectedIndex) {
-            0 -> priority = VERBOSE
-            1 -> priority = DEBUG
-            2 -> priority = INFO
-            3 -> priority = WARN
-            4 -> priority = ERROR
-        }
-
-        return priority
     }
 
     private fun isAppInstalled(

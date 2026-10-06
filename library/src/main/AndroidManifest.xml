@@ -11,5 +11,16 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Keeps the Vlog log overlay bubble alive while the app is in the background"/>
         </service>
+
+        <!-- Expanded content of the notification bubble mode -->
+        <activity android:name="com.android.girish.vlog.VlogBubbleActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:allowEmbedded="true"
+            android:resizeableActivity="true"
+            android:documentLaunchMode="always"
+            android:exported="false"/>
+
+        <receiver android:name="com.android.girish.vlog.VlogBubbleDismissReceiver"
+            android:exported="false"/>
     </application>
 </manifest>

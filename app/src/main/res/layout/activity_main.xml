@@ -24,6 +24,16 @@
         android:text="Start Vlog"/>
 
     <Button
+        android:id="@+id/startBubble"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@android:color/darker_gray"
+        android:layout_margin="10dp"
+        android:textAllCaps="false"
+        android:text="Start Vlog (Bubble)"/>
+
+    <Button
         android:id="@+id/addFeed"
         android:layout_width="150dp"
         android:layout_height="wrap_content"

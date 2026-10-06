@@ -55,6 +55,9 @@ class MainActivity : AppCompatActivity() {
         startButton.setOnClickListener {
             mVlog.start()
         }
+        findViewById<Button>(R.id.startBubble).setOnClickListener {
+            mVlog.start(Vlog.Mode.BUBBLE)
+        }
         stopButton.setOnClickListener { mVlog.stop() }
         addFeed.setOnClickListener {
             logRandomMessages()

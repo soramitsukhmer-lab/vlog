@@ -39,6 +39,23 @@ internal class ContentViewModel(
         mVlogRepository.configureLogPriority(priority)
     }
 
+    /**
+     * Maps a position in the `log_priority_names` array to a log priority and applies it
+     *
+     * @param index
+     */
+    fun onPriorityIndexSelected(index: Int) {
+        @LogPriority val priority =
+            when (index) {
+                1 -> VlogModel.DEBUG
+                2 -> VlogModel.INFO
+                3 -> VlogModel.WARN
+                4 -> VlogModel.ERROR
+                else -> VlogModel.VERBOSE
+            }
+        onPrioritySet(priority)
+    }
+
     fun onClearLogs() {
         mVlogRepository.clearLogs()
     }
