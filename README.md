@@ -69,7 +69,7 @@ Publishing a GitHub release runs the `Publish to GitHub Packages` workflow. To p
 ```
 ./gradlew :library:publishReleasePublicationToGitHubPackagesRepository :library-no-op:publishReleasePublicationToGitHubPackagesRepository
 ```
-GitHub Packages does not allow overwriting a version, so bump `versionName` in the module's `build.gradle` before each release.
+The workflow uses the git tag of the release as the version, with a leading `v` removed, so tag `v0.2.0` publishes `0.2.0`. A local run, or a manual workflow run from a branch, uses the `versionName` of each module's `build.gradle`, or the version you pass with `-PreleaseVersion=<version>`. GitHub Packages does not allow overwriting a version, so use a new tag for every release.
 
 ### Basic Usage
 The Vlog exposes easy-to-use APIs and has same logging methods as Android's Log utility ( `Log.v`, `Log.d`...)

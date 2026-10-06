@@ -28,9 +28,19 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # A release tag like v0.2.0 or 0.2.0 publishes version 0.2.0. Manual runs from a branch have no
+      # tag, so the modules fall back to their versionName.
+      - name: Resolve version from the git tag
+        id: version
+        run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+
       # The credentials are read by the GitHubPackages repository in library/build.gradle
       - name: Publish library and library-no-op
-        run: ./gradlew :library:publishReleasePublicationToGitHubPackagesRepository :library-no-op:publishReleasePublicationToGitHubPackagesRepository
+        run: ./gradlew :library:publishReleasePublicationToGitHubPackagesRepository :library-no-op:publishReleasePublicationToGitHubPackagesRepository ${RELEASE_VERSION:+-PreleaseVersion=$RELEASE_VERSION}
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ steps.version.outputs.value }}

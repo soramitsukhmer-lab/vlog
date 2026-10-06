@@ -78,7 +78,8 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.girish3'
                 artifactId = 'library'
-                version = android.defaultConfig.versionName
+                // The release workflow passes the git tag, local builds use the module's versionName
+                version = project.findProperty('releaseVersion') ?: android.defaultConfig.versionName
             }
         }
     }
