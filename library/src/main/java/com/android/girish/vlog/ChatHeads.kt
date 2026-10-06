@@ -26,10 +26,12 @@ internal class Rectangle(
     val w: Double,
     val h: Double,
 ) {
-    private val OUT_LEFT = 1
-    private val OUT_TOP = 2
-    private val OUT_RIGHT = 4
-    private val OUT_BOTTOM = 8
+    private companion object {
+        const val OUT_LEFT = 1
+        const val OUT_TOP = 2
+        const val OUT_RIGHT = 4
+        const val OUT_BOTTOM = 8
+    }
 
     fun outcode(
         x: Double,

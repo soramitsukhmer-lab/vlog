@@ -20,10 +20,10 @@ abstract class AbstractLogger {
         const val ERROR = 5
     }
 
-    protected var _nextLogger: AbstractLogger? = null
+    private var nextLogger: AbstractLogger? = null
 
     fun setNextLogger(logger: AbstractLogger) {
-        _nextLogger = logger
+        nextLogger = logger
     }
 
     fun log(
@@ -32,7 +32,7 @@ abstract class AbstractLogger {
         message: String,
     ) {
         write(priority, tag, message)
-        _nextLogger?.log(priority, tag, message)
+        nextLogger?.log(priority, tag, message)
     }
 
     protected abstract fun write(

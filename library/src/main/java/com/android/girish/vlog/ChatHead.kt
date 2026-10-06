@@ -115,6 +115,7 @@ internal class ChatHead(
         this.setOnTouchListener(this)
 
         // placeholder (appropriate bitmap for chat head)
+
         /*var chatHeadBitmap: Bitmap = Bitmap.createBitmap(ChatHeads.CHAT_HEAD_SIZE, ChatHeads.CHAT_HEAD_SIZE, Bitmap.Config.ARGB_8888)
             .addBackground(R.drawable.teams_icon)
             .makeCircular()
@@ -122,6 +123,7 @@ internal class ChatHead(
             .addShadow()*/
 
         // TODO: @girish unable to add background color for the custom png bitmap (figure it out!)
+
         /*val localBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.teams_icon2)
         localBitmap
             .addBackground(Color.BLACK)

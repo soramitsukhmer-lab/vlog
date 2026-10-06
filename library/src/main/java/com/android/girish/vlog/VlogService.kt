@@ -18,9 +18,9 @@ import androidx.core.app.NotificationCompat
 internal class VlogService : Service() {
     companion object {
         lateinit var sInstance: VlogService
+        private val TAG = VlogService::class.java.simpleName
     }
 
-    private val TAG = VlogService::class.java.simpleName
     private val mContentViewModel: ContentViewModel = ServiceLocator.provideContentViewModel()
     lateinit var windowManager: WindowManager
     lateinit var chatHeads: ChatHeads

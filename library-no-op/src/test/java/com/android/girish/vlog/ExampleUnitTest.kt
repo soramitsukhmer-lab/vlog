@@ -1,6 +1,6 @@
 package com.android.girish.vlog
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**

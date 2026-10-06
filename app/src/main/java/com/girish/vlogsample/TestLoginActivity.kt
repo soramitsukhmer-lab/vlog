@@ -12,7 +12,10 @@ import com.google.android.material.snackbar.Snackbar
 
 class TestLoginActivity : AppCompatActivity() {
     private lateinit var mLogger: AbstractLogger
-    private val TAG = "LoginActivity"
+
+    private companion object {
+        const val TAG = "LoginActivity"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
