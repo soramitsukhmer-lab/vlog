@@ -25,6 +25,9 @@ internal class VlogService : Service() {
     lateinit var windowManager: WindowManager
     lateinit var chatHeads: ChatHeads
 
+    // Provides the lifecycle that Compose needs in the overlay window
+    private val viewTreeOwner = OverlayViewTreeOwner()
+
     private lateinit var innerReceiver: InnerReceiver
 
     // Binder given to clients
@@ -53,6 +56,8 @@ internal class VlogService : Service() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
         chatHeads = ChatHeads(this, mContentViewModel)
+        viewTreeOwner.attachTo(chatHeads)
+        viewTreeOwner.onCreate()
 
         innerReceiver = InnerReceiver()
         val intentFilter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
@@ -107,6 +112,7 @@ internal class VlogService : Service() {
         if (::chatHeads.isInitialized) {
             chatHeads.content.release()
         }
+        viewTreeOwner.onDestroy()
         super.onDestroy()
     }
 

@@ -24,31 +24,23 @@
 
 package com.android.girish.vlog
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 
 /**
- * Expanded content of the Vlog notification bubble. Shows the same log viewer as the overlay mode.
+ * Minimal Compose theme for the log viewer, built from the library's existing color resources.
  */
-internal class VlogBubbleActivity : ComponentActivity() {
-    private val viewModel = ServiceLocator.provideContentViewModel()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            VlogTheme {
-                val logs by viewModel.resultObserver.observeAsState(emptyList())
-                LogContentScreen(
-                    logs = logs,
-                    onKeywordChange = viewModel::onKeywordEnter,
-                    onPriorityIndexSelected = viewModel::onPriorityIndexSelected,
-                    onClearLogs = viewModel::onClearLogs,
-                )
-            }
-        }
-    }
+@Composable
+internal fun VlogTheme(content: @Composable () -> Unit) {
+    val colorScheme =
+        lightColorScheme(
+            primary = colorResource(R.color.colorPrimary),
+            surface = colorResource(R.color.white_bg),
+            onSurface = Color.Black,
+            outline = colorResource(R.color.background),
+        )
+    MaterialTheme(colorScheme = colorScheme, content = content)
 }
