@@ -78,8 +78,8 @@ private const val COLLAPSED_MESSAGE_LENGTH = 50
 private const val EXPANDED_MESSAGE_MAX_LINES = 20
 
 /**
- * The log viewer: a top app bar (app title and a clear action), a filter bar (priority and keyword)
- * and the list of logs.
+ * The log viewer: a top app bar (app title, an export action and a clear action), a filter bar (priority
+ * and keyword) and the list of logs.
  *
  * Replaces the `log_content_view` XML layout. Filtering is delegated to the caller through the
  * callbacks, [logs] is expected to be the already filtered list.
@@ -89,6 +89,7 @@ private const val EXPANDED_MESSAGE_MAX_LINES = 20
  * @param onKeywordChange called when the user edits the filter keyword
  * @param onPriorityIndexSelected called with the position in `log_priority_names` the user picked
  * @param onClearLogs called when the user taps Clear
+ * @param onExportLogs called with the logs that are shown when the user taps Export
  */
 @Composable
 internal fun LogContentScreen(
@@ -97,6 +98,7 @@ internal fun LogContentScreen(
     onKeywordChange: (String) -> Unit,
     onPriorityIndexSelected: (Int) -> Unit,
     onClearLogs: () -> Unit,
+    onExportLogs: (List<VlogModel>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // Only one log is expanded at a time, logs have no equality so this is an identity match
@@ -119,7 +121,7 @@ internal fun LogContentScreen(
                 RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp),
             ),
     ) {
-        LogAppBar(title = title, onClearLogs = onClearLogs)
+        LogAppBar(title = title, onExportLogs = { onExportLogs(logs) }, onClearLogs = onClearLogs)
         LogFilterBar(
             onKeywordChange = onKeywordChange,
             onPriorityIndexSelected = onPriorityIndexSelected,
@@ -145,6 +147,7 @@ internal fun LogContentScreen(
 @Composable
 private fun LogAppBar(
     title: String,
+    onExportLogs: () -> Unit,
     onClearLogs: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -158,6 +161,9 @@ private fun LogAppBar(
             )
         },
         actions = {
+            IconButton(onClick = onExportLogs) {
+                Icon(painterResource(R.drawable.ic_download), contentDescription = stringResource(R.string.export_logs))
+            }
             IconButton(onClick = onClearLogs) {
                 Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.clear_logs))
             }
@@ -314,7 +320,7 @@ private fun LogItem(
     }
 }
 
-private fun VlogModel.priorityInitial(): String =
+internal fun VlogModel.priorityInitial(): String =
     when (logPriority) {
         VlogModel.DEBUG -> "D"
         VlogModel.ERROR -> "E"
@@ -341,6 +347,7 @@ private fun LogContentScreenPreview() {
             onKeywordChange = {},
             onPriorityIndexSelected = {},
             onClearLogs = {},
+            onExportLogs = {},
         )
     }
 }

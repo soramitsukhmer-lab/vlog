@@ -90,6 +90,9 @@ vlog.stop()
 vlog.isEnabled() // returns true if vlog.start() was called
 ```
 
+### Exporting logs
+The download action in the app bar of the log viewer saves the logs of the last 10 seconds to a text file, one line per log. Only the logs the viewer shows are exported, so the priority and keyword filters apply. On Android 10+ the file goes to a folder in `Downloads` named after your app, for example `Downloads/My App`, which needs no permission. On older versions it goes to the `Documents` folder of the app. A toast tells you where the file was saved.
+
 ### Theming
 The log viewer uses light colors by default. To match it to your app, pass a `VlogThemeConfig` with the colors you want to change, anything left out keeps its default. It takes effect right away, also when the viewer is already showing:
 ```kotlin

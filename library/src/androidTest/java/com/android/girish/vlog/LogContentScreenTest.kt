@@ -53,6 +53,7 @@ class LogContentScreenTest {
         onKeywordChange: (String) -> Unit = {},
         onPriorityIndexSelected: (Int) -> Unit = {},
         onClearLogs: () -> Unit = {},
+        onExportLogs: (List<VlogModel>) -> Unit = {},
     ) {
         composeRule.setContent {
             VlogTheme {
@@ -62,6 +63,7 @@ class LogContentScreenTest {
                     onKeywordChange = onKeywordChange,
                     onPriorityIndexSelected = onPriorityIndexSelected,
                     onClearLogs = onClearLogs,
+                    onExportLogs = onExportLogs,
                 )
             }
         }
@@ -139,6 +141,16 @@ class LogContentScreenTest {
         composeRule.onNodeWithText("I/Surface: ").performClick()
 
         filterField.assertIsNotFocused()
+    }
+
+    @Test
+    fun exportActionReportsTheLogsThatAreShown() {
+        var exported: List<VlogModel> = emptyList()
+        setScreen(onExportLogs = { exported = it })
+
+        composeRule.onNodeWithContentDescription("Export the last 10 seconds").performClick()
+
+        assertEquals(listOf(shortLog, longLog), exported)
     }
 
     @Test

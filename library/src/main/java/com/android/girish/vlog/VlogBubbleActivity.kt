@@ -54,6 +54,7 @@ internal class VlogBubbleActivity : ComponentActivity() {
                     onKeywordChange = viewModel::onKeywordEnter,
                     onPriorityIndexSelected = viewModel::onPriorityIndexSelected,
                     onClearLogs = viewModel::onClearLogs,
+                    onExportLogs = { LogExporter.exportRecent(this@VlogBubbleActivity, it) },
                     // The bubble is drawn edge to edge, keep the viewer off the system bars and the edges
                     modifier = Modifier.safeDrawingPadding().padding(8.dp),
                 )

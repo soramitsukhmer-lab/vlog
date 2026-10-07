@@ -31,11 +31,16 @@ import android.os.Build
 import androidx.core.content.pm.PackageInfoCompat
 
 /**
+ * The name of the app using Vlog, as the launcher shows it.
+ */
+internal fun Context.getAppName(): String = applicationInfo.loadLabel(packageManager).toString()
+
+/**
  * The name, version name and version code of the app using Vlog, for example `My App v1.2.0 (42)`. Falls
  * back to the name alone when the package info is not available, and leaves out an empty version name.
  */
 internal fun Context.getAppTitle(): String {
-    val name = applicationInfo.loadLabel(packageManager).toString()
+    val name = getAppName()
     val info = getPackageInfo() ?: return name
     val versionName = info.versionName
 

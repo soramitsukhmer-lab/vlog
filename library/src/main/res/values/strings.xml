@@ -3,6 +3,10 @@
     <string name="select_priority">Log Priority</string>
     <string name="filter_hint">Enter filter text</string>
     <string name="clear_logs">Clear</string>
+    <string name="export_logs">Export the last 10 seconds</string>
+    <string name="export_done">Saved %1$d logs to %2$s</string>
+    <string name="export_nothing">No logs in the last 10 seconds</string>
+    <string name="export_failed">Could not save the logs</string>
     <string name="vlog_bubble_channel_name">Vlog bubble</string>
     <string name="vlog_bubble_title">Vlog</string>
     <string name="vlog_bubble_message">Tap the bubble to view logs</string>

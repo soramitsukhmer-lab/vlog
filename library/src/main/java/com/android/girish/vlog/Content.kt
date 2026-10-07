@@ -37,6 +37,7 @@ internal class Content(
                             onKeywordChange = mContentViewModel::onKeywordEnter,
                             onPriorityIndexSelected = mContentViewModel::onPriorityIndexSelected,
                             onClearLogs = mContentViewModel::onClearLogs,
+                            onExportLogs = { LogExporter.exportRecent(context, it) },
                             // Leaves room for the chat head above the content
                             modifier = Modifier.padding(top = 80.dp),
                         )

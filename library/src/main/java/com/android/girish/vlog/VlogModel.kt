@@ -6,6 +6,8 @@ internal class VlogModel(
     @param:LogPriority val logPriority: Int,
     val tag: String,
     val logMessage: String,
+    // When the log was written, in milliseconds since the epoch
+    val timestamp: Long = System.currentTimeMillis(),
 ) {
     @Retention(AnnotationRetention.SOURCE)
     @IntDef(VERBOSE, DEBUG, INFO, WARN, ERROR)
