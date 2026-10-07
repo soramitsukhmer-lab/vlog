@@ -439,7 +439,28 @@ internal class ChatHeads(
         removeAll()
         closeCaptured = false
         movingOutOfClose = false
-        VlogService.sInstance.windowManager.removeView(motionTracker)
+        removeWindow(motionTracker)
+    }
+
+    /**
+     * Removes the overlay windows. They are added when the service is created and would otherwise outlive it:
+     * the full screen window then stays on screen and, while the content is expanded, dims the screen and
+     * swallows every touch until the draw over other apps permission is revoked.
+     */
+    fun destroy() {
+        showContentRunnable?.let { handler.removeCallbacks(it) }
+        removeAll()
+        removeWindow(motionTracker)
+        removeWindow(this)
+    }
+
+    private fun removeWindow(window: View) {
+        try {
+            // Not the service's window manager, it can already belong to a newer service instance
+            (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).removeViewImmediate(window)
+        } catch (e: IllegalArgumentException) {
+            // Already removed, the close gesture removes the motion tracker before the service is destroyed
+        }
     }
 
     fun removeAll() {

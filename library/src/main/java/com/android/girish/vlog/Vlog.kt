@@ -183,7 +183,9 @@ class Vlog private constructor(
             mBubbleController.dismiss()
             mVlogRepository.reset()
         } else if (mServiceIntent != null) {
-            mService!!.cleanUp()
+            // Null while the service is still connecting, then there is nothing to clean up yet, and the
+            // service removes its windows by itself once it is destroyed below
+            mService?.cleanUp()
             mVlogRepository.reset()
             mApplicationContext.unbindService(mServerConn)
             mApplicationContext.stopService(mServiceIntent)

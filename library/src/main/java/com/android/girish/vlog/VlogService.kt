@@ -110,6 +110,7 @@ internal class VlogService : Service() {
         Log.d(TAG, "Destroying Service")
         cleanUp()
         if (::chatHeads.isInitialized) {
+            chatHeads.destroy()
             chatHeads.content.release()
         }
         viewTreeOwner.onDestroy()
