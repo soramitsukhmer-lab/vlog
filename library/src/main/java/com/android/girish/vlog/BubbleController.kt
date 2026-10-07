@@ -170,7 +170,7 @@ internal class BubbleController(
                 .Builder(SHORTCUT_ID)
                 .setDesiredHeight(DESIRED_HEIGHT_DP)
                 .setDeleteIntent(dismissIntent)
-                .setAutoExpandBubble(true)
+                .setAutoExpandBubble(false)
                 .setSuppressNotification(true)
                 .build()
 
