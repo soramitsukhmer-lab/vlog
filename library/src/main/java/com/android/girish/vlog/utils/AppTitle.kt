@@ -36,19 +36,36 @@ import androidx.core.content.pm.PackageInfoCompat
 internal fun Context.getAppName(): String = applicationInfo.loadLabel(packageManager).toString()
 
 /**
- * The name, version name and version code of the app using Vlog, for example `My App v1.2.0 (42)`. Falls
- * back to the name alone when the package info is not available, and leaves out an empty version name.
+ * The title for the app using Vlog, see [formatAppTitle]. Falls back to the name alone when the package
+ * info is not available, so the title is never empty.
+ *
+ * @param showAppName false leaves the name out, for apps with a name too long for the title
  */
-internal fun Context.getAppTitle(): String {
+internal fun Context.getAppTitle(showAppName: Boolean = true): String {
     val name = getAppName()
     val info = getPackageInfo() ?: return name
-    val versionName = info.versionName
 
-    return buildString {
-        append(name)
-        if (!versionName.isNullOrEmpty()) append(" v").append(versionName)
-        append(" (").append(PackageInfoCompat.getLongVersionCode(info)).append(')')
-    }
+    return formatAppTitle(
+        name = if (showAppName) name else null,
+        versionName = info.versionName,
+        versionCode = PackageInfoCompat.getLongVersionCode(info),
+    )
+}
+
+/**
+ * Joins the parts of the title, for example `My App v1.2.0 (42)`. A `null` name is left out, as is an empty
+ * version name, the version code is always there.
+ */
+internal fun formatAppTitle(
+    name: String?,
+    versionName: String?,
+    versionCode: Long,
+): String {
+    val parts = mutableListOf<String>()
+    if (!name.isNullOrEmpty()) parts.add(name)
+    if (!versionName.isNullOrEmpty()) parts.add("v$versionName")
+    parts.add("($versionCode)")
+    return parts.joinToString(" ")
 }
 
 private fun Context.getPackageInfo(): PackageInfo? =

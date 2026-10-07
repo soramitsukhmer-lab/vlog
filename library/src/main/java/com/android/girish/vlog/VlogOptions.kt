@@ -24,69 +24,14 @@
 
 package com.android.girish.vlog
 
-import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 /**
- * No-op implementation.
+ * Options the host app chooses through [Vlog]. They are snapshot state, so a viewer that is already
+ * showing picks up a change right away.
  */
-class Vlog private constructor(
-    val mApplicationContext: Context,
-) {
-    @JvmOverloads
-    fun start(mode: Mode = Mode.OVERLAY) {}
-
-    fun stop() {}
-
-    fun isEnabled(): Boolean = false
-
-    fun setTheme(config: VlogThemeConfig) {}
-
-    fun setShowAppNameInTitle(show: Boolean) {}
-
-    fun openBubbleSettings() {}
-
-    fun v(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun d(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun i(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun w(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun e(
-        tag: String,
-        msg: String,
-    ) {}
-
-    enum class Mode {
-        OVERLAY,
-        BUBBLE,
-    }
-
-    companion object {
-        private var instance: Vlog? = null
-
-        @JvmStatic
-        fun getInstance(context: Context): Vlog {
-            synchronized(this) {
-                if (instance == null) {
-                    instance = Vlog(context)
-                }
-
-                return instance!!
-            }
-        }
-    }
+internal object VlogOptions {
+    var showAppName by mutableStateOf(true)
 }

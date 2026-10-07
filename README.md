@@ -90,6 +90,12 @@ vlog.stop()
 vlog.isEnabled() // returns true if vlog.start() was called
 ```
 
+### Title
+The title of the log viewer is the name, version name and version code of your app, for example `My App v1.2.0 (42)`. If the name of your app is too long for the title, hide it and keep the version info, `v1.2.0 (42)`. It takes effect right away, also when the viewer is already showing:
+```kotlin
+vlog.setShowAppNameInTitle(false)
+```
+
 ### Exporting logs
 The download action in the app bar of the log viewer saves the logs of the last 10 seconds to a text file, one line per log. Only the logs the viewer shows are exported, so the priority and keyword filters apply. On Android 10+ the file goes to a folder in `Downloads` named after your app, for example `Downloads/My App`, which needs no permission. On older versions it goes to the `Documents` folder of the app. A toast tells you where the file was saved.
 

@@ -49,7 +49,7 @@ internal class VlogBubbleActivity : ComponentActivity() {
             VlogTheme {
                 val logs by viewModel.resultObserver.observeAsState(emptyList())
                 LogContentScreen(
-                    title = remember { getAppTitle() },
+                    title = remember(VlogOptions.showAppName) { getAppTitle(VlogOptions.showAppName) },
                     logs = logs,
                     onKeywordChange = viewModel::onKeywordEnter,
                     onPriorityIndexSelected = viewModel::onPriorityIndexSelected,

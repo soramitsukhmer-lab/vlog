@@ -24,69 +24,29 @@
 
 package com.android.girish.vlog
 
-import android.content.Context
+import com.android.girish.vlog.utils.formatAppTitle
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-/**
- * No-op implementation.
- */
-class Vlog private constructor(
-    val mApplicationContext: Context,
-) {
-    @JvmOverloads
-    fun start(mode: Mode = Mode.OVERLAY) {}
-
-    fun stop() {}
-
-    fun isEnabled(): Boolean = false
-
-    fun setTheme(config: VlogThemeConfig) {}
-
-    fun setShowAppNameInTitle(show: Boolean) {}
-
-    fun openBubbleSettings() {}
-
-    fun v(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun d(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun i(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun w(
-        tag: String,
-        msg: String,
-    ) {}
-
-    fun e(
-        tag: String,
-        msg: String,
-    ) {}
-
-    enum class Mode {
-        OVERLAY,
-        BUBBLE,
+class AppTitleTest {
+    @Test
+    fun titleHasTheNameVersionNameAndVersionCode() {
+        assertEquals("My App v1.2.0 (42)", formatAppTitle("My App", "1.2.0", 42))
     }
 
-    companion object {
-        private var instance: Vlog? = null
+    @Test
+    fun hidingTheNameKeepsTheVersionInfo() {
+        assertEquals("v1.2.0 (42)", formatAppTitle(null, "1.2.0", 42))
+    }
 
-        @JvmStatic
-        fun getInstance(context: Context): Vlog {
-            synchronized(this) {
-                if (instance == null) {
-                    instance = Vlog(context)
-                }
+    @Test
+    fun anEmptyVersionNameIsLeftOut() {
+        assertEquals("My App (42)", formatAppTitle("My App", "", 42))
+        assertEquals("My App (42)", formatAppTitle("My App", null, 42))
+    }
 
-                return instance!!
-            }
-        }
+    @Test
+    fun withoutNameAndVersionNameOnlyTheVersionCodeIsLeft() {
+        assertEquals("(42)", formatAppTitle(null, null, 42))
     }
 }

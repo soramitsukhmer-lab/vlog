@@ -87,6 +87,15 @@ class Vlog private constructor(
         VlogThemeState.config = config
     }
 
+    /**
+     * Chooses whether the title of the log viewer starts with the name of your app, `My App v1.2.0 (42)`, or
+     * only shows the version, `v1.2.0 (42)`. Hide the name when it is too long for the title. The name is
+     * shown by default, a viewer that is already showing changes right away.
+     */
+    fun setShowAppNameInTitle(show: Boolean) {
+        VlogOptions.showAppName = show
+    }
+
     private fun requestDrawOverPermission() {
         val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${mApplicationContext.packageName}"))
         intent.setFlags(FLAG_ACTIVITY_NEW_TASK)

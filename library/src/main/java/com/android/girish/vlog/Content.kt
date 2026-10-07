@@ -6,6 +6,7 @@ import android.view.animation.Animation
 import android.widget.LinearLayout
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
@@ -22,7 +23,6 @@ internal class Content(
     private val springSystem = SpringSystem.create()
     private val scaleSpring = springSystem.createSpring()
 
-    private val title = context.getAppTitle()
     private val logs = mutableStateOf<List<VlogModel>>(emptyList())
     private val logObserver = Observer<List<VlogModel>> { logs.value = it }
 
@@ -32,7 +32,7 @@ internal class Content(
                 setContent {
                     VlogTheme {
                         LogContentScreen(
-                            title = title,
+                            title = remember(VlogOptions.showAppName) { context.getAppTitle(VlogOptions.showAppName) },
                             logs = logs.value,
                             onKeywordChange = mContentViewModel::onKeywordEnter,
                             onPriorityIndexSelected = mContentViewModel::onPriorityIndexSelected,
