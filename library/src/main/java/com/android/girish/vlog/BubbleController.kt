@@ -38,7 +38,6 @@ import androidx.core.app.Person
 import androidx.core.content.LocusIdCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.graphics.drawable.IconCompat
 
 /**
  * Shows the Vlog log viewer through the Android notification bubble API instead of a
@@ -52,10 +51,10 @@ internal class BubbleController(
     /**
      * Bubbles need Android 11+, notifications to be allowed and the user to allow bubbles for the app.
      */
-    fun isSupported(): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return false
-        return areBubblesAllowed() && notificationManager.areNotificationsEnabled()
-    }
+    fun isSupported(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+            areBubblesAllowed() &&
+            notificationManager.areNotificationsEnabled()
 
     @RequiresApi(Build.VERSION_CODES.R)
     private fun areBubblesAllowed(): Boolean {
@@ -71,6 +70,9 @@ internal class BubbleController(
     // isSupported() has already verified that notifications are allowed (including POST_NOTIFICATIONS)
     @SuppressLint("MissingPermission")
     fun show() {
+        // Shortcut based bubbles need Android 11, isSupported() already keeps older versions out
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
+
         notificationManager.createNotificationChannel(
             NotificationChannelCompat
                 .Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_DEFAULT)
@@ -83,10 +85,10 @@ internal class BubbleController(
                 .Builder()
                 .setName(context.getString(R.string.vlog_bubble_title))
                 .setKey(SHORTCUT_ID)
-                .setBot(true)
                 .setImportant(true)
                 .build()
-        val icon = IconCompat.createWithResource(context, R.drawable.ic_vlog_notification)
+        // A bubble takes its icon from its shortcut, a plain white glyph would be invisible on the bubble
+        val shortcutIcon = BubbleIcon.createAdaptiveBitmap(context)
 
         // Bubbles must be backed by a long lived shortcut
         ShortcutManagerCompat.pushDynamicShortcut(
@@ -94,8 +96,9 @@ internal class BubbleController(
             ShortcutInfoCompat
                 .Builder(context, SHORTCUT_ID)
                 .setLongLived(true)
+                .setIsConversation()
                 .setShortLabel(context.getString(R.string.vlog_bubble_title))
-                .setIcon(icon)
+                .setIcon(shortcutIcon)
                 .setPerson(person)
                 .setLocusId(LocusIdCompat(SHORTCUT_ID))
                 .setIntent(Intent(context, VlogBubbleActivity::class.java).setAction(Intent.ACTION_VIEW))
@@ -118,9 +121,10 @@ internal class BubbleController(
             )
         val bubbleMetadata =
             NotificationCompat.BubbleMetadata
-                .Builder(bubbleIntent, icon)
+                .Builder(SHORTCUT_ID)
                 .setDesiredHeight(DESIRED_HEIGHT_DP)
                 .setDeleteIntent(dismissIntent)
+                .setAutoExpandBubble(true)
                 .setSuppressNotification(true)
                 .build()
 
@@ -130,6 +134,7 @@ internal class BubbleController(
                 .setSmallIcon(R.drawable.ic_vlog_notification)
                 .setContentTitle(context.getString(R.string.vlog_bubble_title))
                 .setContentText(context.getString(R.string.vlog_bubble_message))
+                .setContentIntent(bubbleIntent)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setShortcutId(SHORTCUT_ID)
                 .setLocusId(LocusIdCompat(SHORTCUT_ID))

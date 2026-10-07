@@ -116,7 +116,7 @@ internal class VlogService : Service() {
         super.onDestroy()
     }
 
-    override fun onBind(intent: Intent?): IBinder? = binder
+    override fun onBind(intent: Intent?): IBinder = binder
 
     override fun onStartCommand(
         intent: Intent?,
