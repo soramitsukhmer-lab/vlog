@@ -25,26 +25,34 @@
 package com.android.girish.vlog.utils
 
 import android.content.Context
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.content.pm.PackageInfoCompat
 
 /**
- * The name and version of the app using Vlog, for example `My App v1.2.0`. Falls back to the name
- * alone when the version is not available.
+ * The name, version name and version code of the app using Vlog, for example `My App v1.2.0 (42)`. Falls
+ * back to the name alone when the package info is not available, and leaves out an empty version name.
  */
 internal fun Context.getAppTitle(): String {
     val name = applicationInfo.loadLabel(packageManager).toString()
-    val versionName = getVersionName()
-    return if (versionName.isNullOrEmpty()) name else "$name v$versionName"
+    val info = getPackageInfo() ?: return name
+    val versionName = info.versionName
+
+    return buildString {
+        append(name)
+        if (!versionName.isNullOrEmpty()) append(" v").append(versionName)
+        append(" (").append(PackageInfoCompat.getLongVersionCode(info)).append(')')
+    }
 }
 
-private fun Context.getVersionName(): String? =
+private fun Context.getPackageInfo(): PackageInfo? =
     try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0)).versionName
+            packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
         } else {
             @Suppress("DEPRECATION")
-            packageManager.getPackageInfo(packageName, 0).versionName
+            packageManager.getPackageInfo(packageName, 0)
         }
     } catch (e: PackageManager.NameNotFoundException) {
         null

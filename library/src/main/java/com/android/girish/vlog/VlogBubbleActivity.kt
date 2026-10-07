@@ -27,9 +27,13 @@ package com.android.girish.vlog
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.android.girish.vlog.utils.getAppTitle
 
 /**
@@ -50,6 +54,8 @@ internal class VlogBubbleActivity : ComponentActivity() {
                     onKeywordChange = viewModel::onKeywordEnter,
                     onPriorityIndexSelected = viewModel::onPriorityIndexSelected,
                     onClearLogs = viewModel::onClearLogs,
+                    // The bubble is drawn edge to edge, keep the viewer off the system bars and the edges
+                    modifier = Modifier.safeDrawingPadding().padding(8.dp),
                 )
             }
         }

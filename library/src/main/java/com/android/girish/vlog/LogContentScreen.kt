@@ -316,7 +316,7 @@ private fun VlogModel.priorityInitial(): String =
 private fun LogContentScreenPreview() {
     VlogTheme {
         LogContentScreen(
-            title = "Vlog Sample v1.0",
+            title = "Vlog Sample v1.0 (1)",
             logs =
                 listOf(
                     VlogModel(VlogModel.VERBOSE, "Surface", "Test log with verbose priority"),
