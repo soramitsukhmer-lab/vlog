@@ -42,7 +42,7 @@ import kotlin.math.roundToInt
 internal object BubbleIcon {
     // An adaptive icon is 108dp wide and only the center 66dp is guaranteed to be visible
     private const val ICON_SIZE_DP = 108
-    private const val SAFE_ZONE_INSET_DP = 21
+    private const val SAFE_ZONE_INSET_DP = 28
 
     fun createAdaptiveBitmap(context: Context): IconCompat = IconCompat.createWithAdaptiveBitmap(draw(context))
 
@@ -54,7 +54,7 @@ internal object BubbleIcon {
         val bitmap = createBitmap(size, size)
         val canvas = Canvas(bitmap)
         canvas.drawColor(ContextCompat.getColor(context, R.color.colorPrimary))
-        requireNotNull(ContextCompat.getDrawable(context, R.drawable.ic_vlog_notification)).apply {
+        requireNotNull(ContextCompat.getDrawable(context, R.drawable.ic_adb_notification)).apply {
             setBounds(inset, inset, size - inset, size - inset)
             draw(canvas)
         }
