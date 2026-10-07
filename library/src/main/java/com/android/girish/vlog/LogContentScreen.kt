@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -45,10 +46,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,7 +78,7 @@ private const val COLLAPSED_MESSAGE_LENGTH = 50
 private const val EXPANDED_MESSAGE_MAX_LINES = 20
 
 /**
- * The log viewer: a header (app title and clear button), a filter bar (priority and keyword)
+ * The log viewer: a top app bar (app title and a clear action), a filter bar (priority and keyword)
  * and the list of logs.
  *
  * Replaces the `log_content_view` XML layout. Filtering is delegated to the caller through the
@@ -114,7 +119,7 @@ internal fun LogContentScreen(
                 RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp),
             ),
     ) {
-        LogHeader(title = title, onClearLogs = onClearLogs)
+        LogAppBar(title = title, onClearLogs = onClearLogs)
         LogFilterBar(
             onKeywordChange = onKeywordChange,
             onPriorityIndexSelected = onPriorityIndexSelected,
@@ -136,29 +141,37 @@ internal fun LogContentScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LogHeader(
+private fun LogAppBar(
     title: String,
     onClearLogs: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, top = 5.dp, end = 5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
-        LogButton(onClick = onClearLogs) {
-            Text(stringResource(R.string.clear_logs))
-        }
-    }
+    TopAppBar(
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
+        actions = {
+            IconButton(onClick = onClearLogs) {
+                Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.clear_logs))
+            }
+        },
+        modifier = modifier,
+        // The window handles the system bars: the bubble pads for them and the overlay sits below them
+        windowInsets = WindowInsets(0),
+        colors =
+            TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+            ),
+    )
 }
 
 @Composable

@@ -29,6 +29,7 @@ import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -145,7 +146,7 @@ class LogContentScreenTest {
         var cleared = false
         setScreen(onClearLogs = { cleared = true })
 
-        composeRule.onNodeWithText("Clear").performClick()
+        composeRule.onNodeWithContentDescription("Clear").performClick()
 
         assertEquals(true, cleared)
     }
