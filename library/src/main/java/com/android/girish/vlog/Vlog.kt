@@ -108,12 +108,14 @@ class Vlog private constructor(
     /**
      * Starts Vlog.
      *
-     * @param mode how the log viewer is shown. [Mode.BUBBLE] falls back to [Mode.OVERLAY] when
-     * notification bubbles are not available.
+     * @param mode how the log viewer is shown. [Mode.BUBBLE] needs Android 11+, notifications allowed
+     * and bubbles allowed for the app. If the user can allow them, Vlog opens the matching settings
+     * page instead of starting, so call [start] again afterwards. Below Android 11 there is nothing to
+     * allow, so [Mode.BUBBLE] falls back to [Mode.OVERLAY].
      */
     @JvmOverloads
     fun start(mode: Mode = Mode.OVERLAY) {
-        val resolvedMode = resolveMode(mode)
+        val resolvedMode = resolveMode(mode) ?: return
 
         if (resolvedMode == Mode.OVERLAY && !canDrawOverOtherApp()) {
             requestDrawOverPermission()
@@ -136,12 +138,38 @@ class Vlog private constructor(
         // initialize other resources if any
     }
 
-    private fun resolveMode(requested: Mode): Mode {
-        if (requested == Mode.BUBBLE && !mBubbleController.isSupported()) {
-            Log.d(TAG, "Notification bubbles are not available, falling back to overlay mode")
-            return Mode.OVERLAY
+    /**
+     * Returns the mode to start in, or `null` when the user has to change a setting first and the
+     * settings page was opened.
+     */
+    private fun resolveMode(requested: Mode): Mode? {
+        if (requested != Mode.BUBBLE) return requested
+
+        return when (mBubbleController.availability()) {
+            BubbleController.Availability.SUPPORTED -> Mode.BUBBLE
+            BubbleController.Availability.UNSUPPORTED_VERSION -> {
+                Log.d(TAG, "Notification bubbles need Android 11, falling back to overlay mode")
+                Mode.OVERLAY
+            }
+            BubbleController.Availability.NOTIFICATIONS_DISABLED -> {
+                Log.d(TAG, "Notifications are not allowed, opening the notification settings")
+                mBubbleController.openNotificationSettings()
+                null
+            }
+            BubbleController.Availability.BUBBLES_DISABLED -> {
+                Log.d(TAG, "Bubbles are not allowed for the app, opening the bubble settings")
+                mBubbleController.openBubbleSettings()
+                null
+            }
         }
-        return requested
+    }
+
+    /**
+     * Opens the bubble settings of your app, where the user can allow bubbles. Android 11 has no bubble
+     * page, there it opens the notification settings of the app.
+     */
+    fun openBubbleSettings() {
+        mBubbleController.openBubbleSettings()
     }
 
     fun stop() {

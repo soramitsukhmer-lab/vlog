@@ -41,6 +41,8 @@ class Vlog private constructor(
 
     fun setTheme(config: VlogThemeConfig) {}
 
+    fun openBubbleSettings() {}
+
     fun v(
         tag: String,
         msg: String,

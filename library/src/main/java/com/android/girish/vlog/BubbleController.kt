@@ -27,9 +27,12 @@ package com.android.girish.vlog
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.provider.Settings
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
@@ -51,10 +54,53 @@ internal class BubbleController(
     /**
      * Bubbles need Android 11+, notifications to be allowed and the user to allow bubbles for the app.
      */
-    fun isSupported(): Boolean =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
-            areBubblesAllowed() &&
-            notificationManager.areNotificationsEnabled()
+    fun availability(): Availability {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return Availability.UNSUPPORTED_VERSION
+        if (!notificationManager.areNotificationsEnabled()) return Availability.NOTIFICATIONS_DISABLED
+        if (!areBubblesAllowed()) return Availability.BUBBLES_DISABLED
+        return Availability.SUPPORTED
+    }
+
+    /**
+     * Why bubbles can or cannot be shown, the user can fix everything except [UNSUPPORTED_VERSION]
+     */
+    enum class Availability {
+        SUPPORTED,
+        UNSUPPORTED_VERSION,
+        NOTIFICATIONS_DISABLED,
+        BUBBLES_DISABLED,
+    }
+
+    /**
+     * Opens the bubble settings of the app. Android 11 has no dedicated page, so it opens the notification
+     * settings of the app, as does every version that has no bubbles.
+     */
+    fun openBubbleSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            openSettings(
+                Intent(Settings.ACTION_APP_NOTIFICATION_BUBBLE_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    .putExtra(EXTRA_APP_UID, context.applicationInfo.uid),
+            )
+        } else {
+            openNotificationSettings()
+        }
+    }
+
+    /**
+     * Opens the notification settings of the app, where the user can allow notifications.
+     */
+    fun openNotificationSettings() {
+        openSettings(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
+    }
+
+    private fun openSettings(intent: Intent) {
+        try {
+            context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        } catch (e: ActivityNotFoundException) {
+            Log.w(TAG, "Unable to open the settings of the app", e)
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.R)
     private fun areBubblesAllowed(): Boolean {
@@ -67,10 +113,10 @@ internal class BubbleController(
         }
     }
 
-    // isSupported() has already verified that notifications are allowed (including POST_NOTIFICATIONS)
+    // availability() has already verified that notifications are allowed (including POST_NOTIFICATIONS)
     @SuppressLint("MissingPermission")
     fun show() {
-        // Shortcut based bubbles need Android 11, isSupported() already keeps older versions out
+        // Shortcut based bubbles need Android 11, availability() already keeps older versions out
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
 
         notificationManager.createNotificationChannel(
@@ -159,6 +205,10 @@ internal class BubbleController(
     private fun mutableFlag(): Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0
 
     private companion object {
+        const val TAG = "BubbleController"
+
+        // The key the bubble settings page reads the app uid from, it has no constant in Settings
+        const val EXTRA_APP_UID = "android.provider.extra.APP_UID"
         const val CHANNEL_ID = "vlog_bubble"
         const val SHORTCUT_ID = "vlog_bubble_shortcut"
         const val NOTIFICATION_ID = 102

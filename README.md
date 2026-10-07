@@ -109,7 +109,7 @@ By default Vlog draws a chat head over other apps and needs the "draw over other
 ```kotlin
 vlog.start(Vlog.Mode.BUBBLE)
 ```
-Bubble mode requires Android 11+, the user allowing bubbles for your app, and notifications being allowed. On Android 13+ your app must request the `POST_NOTIFICATIONS` runtime permission itself. If bubbles are not available Vlog falls back to the overlay mode.
+Bubble mode requires Android 11+, the user allowing bubbles for your app, and notifications being allowed. On Android 13+ your app must request the `POST_NOTIFICATIONS` runtime permission itself. If notifications or bubbles are not allowed for your app, `start(Vlog.Mode.BUBBLE)` opens the matching settings page instead of starting, so call it again once the user is back. Below Android 11 there is nothing to allow and Vlog falls back to the overlay mode. You can also send the user to the bubble settings yourself with `vlog.openBubbleSettings()`, on Android 11 this opens the notification settings of your app.
 
 ### Integrate with Timber
 [Timber](https://github.com/JakeWharton/timber) is a popular logging library. Timber is extensible therefore Vlog can be seamlessly integrated alongside Timber. Add a behavior through `Tree` instance and plant the instance by calling `Timber.plant`. For more details, check the [timber sample module](https://github.com/girish3/Vlog/tree/master/timber-sample/src/main/java/com/example/timber) in this repo.
