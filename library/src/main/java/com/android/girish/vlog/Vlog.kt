@@ -97,6 +97,22 @@ class Vlog private constructor(
         VlogOptions.showAppName = show
     }
 
+    /**
+     * Chooses whether long logs are collapsed. Logs are shown in full by default. When collapsed, a log that
+     * is longer than [maxLines] lines is cut off with an ellipsis and gets an arrow that shows it in
+     * full, shorter logs are not affected. A viewer that is already showing changes right away.
+     *
+     * @param collapse true to collapse long logs, false to show every log in full
+     * @param maxLines the number of lines a collapsed log keeps, at least 1
+     */
+    @JvmOverloads
+    fun setCollapseLongLogs(
+        collapse: Boolean,
+        maxLines: Int = 5,
+    ) {
+        VlogOptions.collapseAfterLines = if (collapse) maxLines.coerceAtLeast(1) else null
+    }
+
     private fun requestDrawOverPermission() {
         val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${mApplicationContext.packageName}"))
         intent.setFlags(FLAG_ACTIVITY_NEW_TASK)

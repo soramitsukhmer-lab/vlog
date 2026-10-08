@@ -34,4 +34,7 @@ import androidx.compose.runtime.setValue
  */
 internal object VlogOptions {
     var showAppName by mutableStateOf(true)
+
+    // The number of lines after which a log is collapsed, null to always show logs in full
+    var collapseAfterLines by mutableStateOf<Int?>(null)
 }

@@ -43,6 +43,7 @@ internal class Content(
                             onTagsSelected = mContentViewModel::onTagsSelected,
                             onClearLogs = mContentViewModel::onClearLogs,
                             onExportLogs = { LogExporter.exportRecent(context, it) },
+                            collapseAfterLines = VlogOptions.collapseAfterLines,
                             // Leaves room for the chat head above the content
                             modifier = Modifier.padding(top = 80.dp),
                         )

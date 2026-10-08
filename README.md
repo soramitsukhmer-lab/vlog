@@ -100,6 +100,15 @@ vlog.i("Network", "<-- 200 /users", id)
 ```
 The row sits at the position of the oldest log of the group, shows the id on top and every log below it with its own priority and tag. A group is kept whole by the filters: if only one of its logs matches a keyword, the other logs of the group are shown with it. Logs without an id keep a row of their own, so existing calls need no change.
 
+### Long logs
+Logs are shown in full: a long message wraps onto as many lines as it needs. If long logs get in the way of reading a busy list, collapse them:
+```kotlin
+vlog.setCollapseLongLogs(true)       // a log keeps its first 5 lines
+vlog.setCollapseLongLogs(true, 3)    // or the number of lines you want
+vlog.setCollapseLongLogs(false)      // back to showing every log in full
+```
+A log that needs more lines is cut off with an ellipsis and gets a down arrow on its right, which turns into an up arrow once the log is open. Logs that fit get no arrow. A log you opened stays open while you scroll. It takes effect right away, also when the viewer is already showing.
+
 ### Title
 The title of the log viewer is the name, version name and version code of your app, for example `My App v1.2.0 (42)`. If the name of your app is too long for the title, hide it and keep the version info, `v1.2.0 (42)`. It takes effect right away, also when the viewer is already showing:
 ```kotlin

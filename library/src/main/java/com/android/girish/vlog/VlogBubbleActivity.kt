@@ -58,6 +58,7 @@ internal class VlogBubbleActivity : ComponentActivity() {
                     onTagsSelected = viewModel::onTagsSelected,
                     onClearLogs = viewModel::onClearLogs,
                     onExportLogs = { LogExporter.exportRecent(this@VlogBubbleActivity, it) },
+                    collapseAfterLines = VlogOptions.collapseAfterLines,
                     // The bubble is drawn edge to edge, keep the viewer off the system bars and the edges
                     modifier = Modifier.safeDrawingPadding().padding(8.dp),
                 )

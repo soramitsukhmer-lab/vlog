@@ -24,6 +24,7 @@
 
 package com.android.girish.vlog
 
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
@@ -35,8 +36,11 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -58,6 +62,7 @@ class LogContentScreenTest {
         onTagsSelected: (Set<String>) -> Unit = {},
         onClearLogs: () -> Unit = {},
         onExportLogs: (List<VlogModel>) -> Unit = {},
+        collapseAfterLines: Int? = null,
     ) {
         composeRule.setContent {
             VlogTheme {
@@ -70,6 +75,7 @@ class LogContentScreenTest {
                     onTagsSelected = onTagsSelected,
                     onClearLogs = onClearLogs,
                     onExportLogs = onExportLogs,
+                    collapseAfterLines = collapseAfterLines,
                 )
             }
         }
@@ -135,15 +141,66 @@ class LogContentScreenTest {
     }
 
     @Test
-    fun longMessageIsTruncatedUntilTheLogIsExpanded() {
-        setScreen()
-        val truncated = longMessage.substring(0, 49) + "..."
+    fun aLongMessageIsShownInFull() {
+        // 3000 characters wrap to far more lines than the 20 a log used to be limited to
+        val message = "word ".repeat(600).trim()
+        setScreen(logs = listOf(VlogModel(VlogModel.INFO, "Net", message)), tags = emptyList())
 
-        composeRule.onNodeWithText(truncated).assertIsDisplayed()
+        val layout = layoutOf(message)
+        assertTrue("the message wraps to more than 20 lines", layout.lineCount > 20)
+        assertFalse("nothing is clipped", layout.didOverflowHeight)
+        assertFalse("no line ends in an ellipsis", (0 until layout.lineCount).any { layout.isLineEllipsized(it) })
+    }
 
-        composeRule.onNodeWithText("E/Choreographer: ").performClick()
+    @Test
+    fun aLongLogIsCollapsedWhenAskedToAndOpensWithTheArrow() {
+        val message = "word ".repeat(200).trim()
+        setScreen(logs = listOf(VlogModel(VlogModel.INFO, "Net", message)), tags = emptyList(), collapseAfterLines = 3)
 
-        composeRule.onNodeWithText(longMessage).assertIsDisplayed()
+        // Cut after 3 lines, with the way to show it in full
+        val collapsed = layoutOf(message)
+        assertEquals(3, collapsed.lineCount)
+        assertTrue(collapsed.hasVisualOverflow)
+        composeRule.onNodeWithContentDescription("Show more").assertIsDisplayed()
+
+        composeRule.onNodeWithContentDescription("Show more").performClick()
+
+        val expanded = layoutOf(message)
+        assertTrue("the whole message wraps to more than 3 lines", expanded.lineCount > 3)
+        assertFalse("nothing is clipped", expanded.hasVisualOverflow)
+        composeRule.onNodeWithContentDescription("Show less").assertIsDisplayed()
+
+        composeRule.onNodeWithContentDescription("Show less").performClick()
+
+        assertEquals(3, layoutOf(message).lineCount)
+        composeRule.onNodeWithContentDescription("Show more").assertIsDisplayed()
+    }
+
+    @Test
+    fun aLogThatFitsGetsNoArrow() {
+        setScreen(collapseAfterLines = 3)
+
+        composeRule.onNodeWithContentDescription("Show more").assertDoesNotExist()
+    }
+
+    @Test
+    fun longLogsAreNotCollapsedUnlessAskedTo() {
+        val message = "word ".repeat(200).trim()
+        setScreen(logs = listOf(VlogModel(VlogModel.INFO, "Net", message)), tags = emptyList())
+
+        composeRule.onNodeWithContentDescription("Show more").assertDoesNotExist()
+        assertFalse(layoutOf(message).hasVisualOverflow)
+    }
+
+    private fun layoutOf(text: String): TextLayoutResult {
+        val layouts = mutableListOf<TextLayoutResult>()
+        composeRule
+            .onNodeWithText(text)
+            .fetchSemanticsNode()
+            .config[SemanticsActions.GetTextLayoutResult]
+            .action
+            ?.invoke(layouts)
+        return layouts.single()
     }
 
     @Test

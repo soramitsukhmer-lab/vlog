@@ -44,6 +44,12 @@ class Vlog private constructor(
 
     fun setShowAppNameInTitle(show: Boolean) {}
 
+    @JvmOverloads
+    fun setCollapseLongLogs(
+        collapse: Boolean,
+        maxLines: Int = 5,
+    ) {}
+
     fun openBubbleSettings() {}
 
     @JvmOverloads

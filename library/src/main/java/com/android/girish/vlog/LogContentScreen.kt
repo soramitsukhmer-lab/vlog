@@ -41,6 +41,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -62,6 +63,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,14 +86,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private const val COLLAPSED_MESSAGE_LENGTH = 50
-private const val EXPANDED_MESSAGE_MAX_LINES = 20
-
 // The bar on the left of the rows that group logs
 private val GROUP_BAR_WIDTH = 4.dp
 
 // The bar of a log that shows its level
 private val ACCENT_BAR_WIDTH = 4.dp
+
+// The room for the arrow that opens and closes a collapsed log, an icon with the padding of a touch target
+private val ARROW_SLOT_SIZE = 40.dp
 
 // A set of strings is not something a bundle can hold, a list is
 private val TagSelectionSaver = listSaver<Set<String>, String>(save = { it.toList() }, restore = { it.toSet() })
@@ -111,6 +113,8 @@ private val TagSelectionSaver = listSaver<Set<String>, String>(save = { it.toLis
  * @param onTagsSelected called with the selected tags when the user toggles a chip, none means every tag
  * @param onClearLogs called when the user taps Clear
  * @param onExportLogs called with the logs that are shown when the user taps Export
+ * @param collapseAfterLines the number of lines after which a log is collapsed behind an arrow that opens it,
+ * null shows every log in full
  */
 @Composable
 internal fun LogContentScreen(
@@ -123,11 +127,21 @@ internal fun LogContentScreen(
     onClearLogs: () -> Unit,
     onExportLogs: (List<VlogModel>) -> Unit,
     modifier: Modifier = Modifier,
+    collapseAfterLines: Int? = null,
 ) {
-    // Only one log is expanded at a time, logs have no equality so this is an identity match
-    var expandedLog by remember { mutableStateOf<VlogModel?>(null) }
     var selectedTags by rememberSaveable(stateSaver = TagSelectionSaver) { mutableStateOf(emptySet<String>()) }
     val rows = remember(logs) { groupLogs(logs) }
+
+    // The logs the user showed in full. Logs have no equality, so this is an identity match. It is kept here and
+    // not per row, a row that scrolls out of the list and back must stay as the user left it.
+    var expandedLogs by remember { mutableStateOf(emptySet<VlogModel>()) }
+    val toggleExpanded = { log: VlogModel ->
+        expandedLogs = if (log in expandedLogs) expandedLogs - log else expandedLogs + log
+    }
+    // Do not hold on to logs that are gone, after Clear for example
+    LaunchedEffect(logs) {
+        if (expandedLogs.isNotEmpty()) expandedLogs = expandedLogs.intersect(logs.toHashSet())
+    }
 
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -162,17 +176,21 @@ internal fun LogContentScreen(
         )
         LazyColumn(Modifier.weight(1f)) {
             items(rows) { row ->
-                // A row is expanded by its first log, which stays the same while the row grows
-                val first = row.logs.first()
-                val isExpanded = first == expandedLog
-                val onClick = {
-                    dismissKeyboard()
-                    expandedLog = if (isExpanded) null else first
-                }
                 if (row.id == null) {
-                    LogItem(log = first, isExpanded = isExpanded, onClick = onClick)
+                    val log = row.logs.first()
+                    LogItem(
+                        log = log,
+                        collapseAfterLines = collapseAfterLines,
+                        isExpanded = log in expandedLogs,
+                        onToggleExpanded = { toggleExpanded(log) },
+                    )
                 } else {
-                    LogGroupItem(row = row, isExpanded = isExpanded, onClick = onClick)
+                    LogGroupItem(
+                        row = row,
+                        collapseAfterLines = collapseAfterLines,
+                        expandedLogs = expandedLogs,
+                        onToggleExpanded = toggleExpanded,
+                    )
                 }
                 HorizontalDivider()
             }
@@ -343,20 +361,21 @@ private fun LogButton(
 @Composable
 private fun LogItem(
     log: VlogModel,
+    collapseAfterLines: Int?,
     isExpanded: Boolean,
-    onClick: () -> Unit,
+    onToggleExpanded: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 15.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        LogEntry(log, isExpanded, Modifier.weight(1f))
-        ExpandArrow(isExpanded)
-    }
+    LogEntry(
+        log = log,
+        collapseAfterLines = collapseAfterLines,
+        isExpanded = isExpanded,
+        onToggleExpanded = onToggleExpanded,
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 15.dp),
+    )
 }
 
 /**
@@ -366,55 +385,58 @@ private fun LogItem(
 @Composable
 private fun LogGroupItem(
     row: LogRow,
-    isExpanded: Boolean,
-    onClick: () -> Unit,
+    collapseAfterLines: Int?,
+    expandedLogs: Set<VlogModel>,
+    onToggleExpanded: (VlogModel) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface
     val accent = MaterialTheme.colorScheme.outline
 
-    Row(
+    Column(
         modifier
             .fillMaxWidth()
             .background(onSurface.copy(alpha = 0.04f))
             .drawBehind { drawRect(accent, size = Size(GROUP_BAR_WIDTH.toPx(), size.height)) }
-            .clickable(onClick = onClick)
-            .padding(start = 16.dp, top = 15.dp, bottom = 15.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(start = 16.dp, end = 10.dp, top = 15.dp, bottom = 15.dp),
     ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = row.id.orEmpty(),
-                color = onSurface.copy(alpha = 0.6f),
-                fontSize = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+        Text(
+            text = row.id.orEmpty(),
+            color = onSurface.copy(alpha = 0.6f),
+            fontSize = 12.sp,
+        )
+        row.logs.forEach { log ->
+            LogEntry(
+                log = log,
+                collapseAfterLines = collapseAfterLines,
+                isExpanded = log in expandedLogs,
+                onToggleExpanded = { onToggleExpanded(log) },
+                modifier = Modifier.padding(top = 8.dp),
             )
-            row.logs.forEach { log ->
-                LogEntry(log, isExpanded, Modifier.padding(top = 8.dp))
-            }
         }
-        ExpandArrow(isExpanded)
     }
 }
 
 /**
- * One log: its priority and tag, then its message. The message is cut when collapsed.
+ * One log: its priority and tag, then its message. A long message or tag wraps to more lines. Only when
+ * [collapseAfterLines] is set is a message that needs more lines cut off, with an arrow to show it in full.
+ *
+ * @param collapseAfterLines the lines a collapsed message keeps, null never collapses
+ * @param isExpanded whether the user showed the message in full
  */
 @Composable
 private fun LogEntry(
     log: VlogModel,
+    collapseAfterLines: Int?,
     isExpanded: Boolean,
+    onToggleExpanded: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val levelColors = LocalVlogColors.current.forPriority(log.logPriority)
     val color = levelColors.text
-    val message =
-        if (isExpanded || log.logMessage.length <= COLLAPSED_MESSAGE_LENGTH) {
-            log.logMessage
-        } else {
-            log.logMessage.substring(0, COLLAPSED_MESSAGE_LENGTH - 1) + "..."
-        }
+    // Whether the message needs more lines than it is allowed while collapsed, known after it was laid out
+    var overflows by remember(log) { mutableStateOf(false) }
+    val maxLines = if (collapseAfterLines != null && !isExpanded) collapseAfterLines else Int.MAX_VALUE
 
     Row(modifier.height(IntrinsicSize.Min)) {
         // The bar tells the level at a glance, also in a group where every log has its own level
@@ -430,28 +452,36 @@ private fun LogEntry(
                 text = "${log.priorityInitial()}/${log.tag}: ",
                 color = color,
                 fontSize = 14.sp,
-                overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = message,
+                text = log.logMessage,
                 color = color,
                 fontSize = 14.sp,
-                maxLines = EXPANDED_MESSAGE_MAX_LINES,
+                maxLines = maxLines,
                 overflow = TextOverflow.Ellipsis,
+                onTextLayout = { if (!isExpanded) overflows = it.hasVisualOverflow },
                 modifier = Modifier.padding(top = 3.dp),
             )
         }
+        if (collapseAfterLines != null) {
+            // The slot is always there while collapsing is on, so the message keeps its width when the arrow
+            // shows up. Only logs that are cut off, or that were opened, get the arrow. Short logs never do.
+            Box(Modifier.size(ARROW_SLOT_SIZE)) {
+                if (isExpanded || overflows) {
+                    Icon(
+                        painter = painterResource(if (isExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down),
+                        contentDescription = stringResource(if (isExpanded) R.string.show_less else R.string.show_more),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .clickable(onClick = onToggleExpanded)
+                                .padding(8.dp),
+                    )
+                }
+            }
+        }
     }
-}
-
-@Composable
-private fun ExpandArrow(isExpanded: Boolean) {
-    Icon(
-        painter = painterResource(if (isExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down),
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.padding(end = 10.dp),
-    )
 }
 
 internal fun VlogModel.priorityInitial(): String =
@@ -477,7 +507,11 @@ private fun LogContentScreenPreview() {
                     VlogModel(VlogModel.INFO, "Network", "--> POST /login {\"user\":\"sora\"}", id = "POST /login #1"),
                     VlogModel(VlogModel.INFO, "Surface", "Test log with info priority"),
                     VlogModel(VlogModel.ERROR, "Network", "<-- 401 /login {\"error\":\"invalid\"}", id = "POST /login #1"),
-                    VlogModel(VlogModel.WARN, "DecorView", "Test log with warn priority for a message that is long enough to be truncated"),
+                    VlogModel(
+                        VlogModel.WARN,
+                        "DecorView",
+                        "Test log with warn priority for a message that is long enough to wrap onto several lines, none of it is cut off",
+                    ),
                     VlogModel(VlogModel.ERROR, "Choreographer", "Test log with error priority"),
                 ),
             tags = listOf("Surface", "DecorView", "Choreographer"),
@@ -486,6 +520,38 @@ private fun LogContentScreenPreview() {
             onTagsSelected = {},
             onClearLogs = {},
             onExportLogs = {},
+        )
+    }
+}
+
+// Long logs collapsed after 2 lines: the long ones get an arrow, the short one does not
+@Preview(showBackground = true, heightDp = 420)
+@Composable
+private fun LogContentScreenCollapsedPreview() {
+    VlogTheme {
+        LogContentScreen(
+            title = "Vlog Sample v1.0 (1)",
+            logs =
+                listOf(
+                    VlogModel(VlogModel.INFO, "Surface", "A short log that fits"),
+                    VlogModel(
+                        VlogModel.ERROR,
+                        "Network",
+                        "<-- 500 /orders {\"error\":\"internal\",\"trace\":\"at OrdersService.create at Gateway.route at Server.handle\",\"requestId\":\"3f9c2\"}",
+                    ),
+                    VlogModel(
+                        VlogModel.DEBUG,
+                        "Json",
+                        "[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]",
+                    ),
+                ),
+            tags = emptyList(),
+            onKeywordChange = {},
+            onPriorityIndexSelected = {},
+            onTagsSelected = {},
+            onClearLogs = {},
+            onExportLogs = {},
+            collapseAfterLines = 2,
         )
     }
 }

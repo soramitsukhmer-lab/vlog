@@ -3,6 +3,8 @@
     <string name="select_priority">Log Priority</string>
     <string name="filter_hint">Enter filter text</string>
     <string name="clear_logs">Clear</string>
+    <string name="show_more">Show more</string>
+    <string name="show_less">Show less</string>
     <string name="export_logs">Export the last 10 seconds</string>
     <string name="export_done">Saved %1$d logs to %2$s</string>
     <string name="export_nothing">No logs in the last 10 seconds</string>
