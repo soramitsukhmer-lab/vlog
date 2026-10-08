@@ -177,6 +177,32 @@ class LogContentScreenTest {
     }
 
     @Test
+    fun aGroupHasOneArrowForAllItsLogs() {
+        val request = "request " + "word ".repeat(200).trim()
+        val response = "response " + "word ".repeat(200).trim()
+        setScreen(
+            logs =
+                listOf(
+                    VlogModel(VlogModel.INFO, "Net", request, id = "POST /login"),
+                    VlogModel(VlogModel.INFO, "Net", response, id = "POST /login"),
+                ),
+            tags = emptyList(),
+            collapseAfterLines = 3,
+        )
+
+        // Two logs are cut off, there is still just the one arrow
+        composeRule.onNodeWithContentDescription("Show more").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Show more").performClick()
+
+        // It opened both
+        assertFalse(layoutOf(request).hasVisualOverflow)
+        assertFalse(layoutOf(response).hasVisualOverflow)
+        composeRule.onNodeWithContentDescription("Show less").performClick()
+        assertEquals(3, layoutOf(request).lineCount)
+        assertEquals(3, layoutOf(response).lineCount)
+    }
+
+    @Test
     fun aLogThatFitsGetsNoArrow() {
         setScreen(collapseAfterLines = 3)
 

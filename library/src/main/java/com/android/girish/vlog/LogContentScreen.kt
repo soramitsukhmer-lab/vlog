@@ -65,6 +65,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
@@ -135,8 +136,9 @@ internal fun LogContentScreen(
     // The logs the user showed in full. Logs have no equality, so this is an identity match. It is kept here and
     // not per row, a row that scrolls out of the list and back must stay as the user left it.
     var expandedLogs by remember { mutableStateOf(emptySet<VlogModel>()) }
-    val toggleExpanded = { log: VlogModel ->
-        expandedLogs = if (log in expandedLogs) expandedLogs - log else expandedLogs + log
+    // A row opens or closes as a whole: every log of a group follows the one arrow of the group
+    val toggleExpanded = { rowLogs: List<VlogModel> ->
+        expandedLogs = if (rowLogs.all { it in expandedLogs }) expandedLogs - rowLogs.toSet() else expandedLogs + rowLogs
     }
     // Do not hold on to logs that are gone, after Clear for example
     LaunchedEffect(logs) {
@@ -182,14 +184,14 @@ internal fun LogContentScreen(
                         log = log,
                         collapseAfterLines = collapseAfterLines,
                         isExpanded = log in expandedLogs,
-                        onToggleExpanded = { toggleExpanded(log) },
+                        onToggleExpanded = { toggleExpanded(row.logs) },
                     )
                 } else {
                     LogGroupItem(
                         row = row,
                         collapseAfterLines = collapseAfterLines,
                         expandedLogs = expandedLogs,
-                        onToggleExpanded = toggleExpanded,
+                        onToggleExpanded = { toggleExpanded(row.logs) },
                     )
                 }
                 HorizontalDivider()
@@ -366,16 +368,27 @@ private fun LogItem(
     onToggleExpanded: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LogEntry(
-        log = log,
-        collapseAfterLines = collapseAfterLines,
-        isExpanded = isExpanded,
-        onToggleExpanded = onToggleExpanded,
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 15.dp),
-    )
+    var overflows by remember(log) { mutableStateOf(false) }
+
+    Row(
+        modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 15.dp),
+    ) {
+        LogEntry(
+            log = log,
+            collapseAfterLines = collapseAfterLines,
+            isExpanded = isExpanded,
+            onOverflowChange = { overflows = it },
+            modifier = Modifier.weight(1f),
+        )
+        CollapseArrow(
+            enabled = collapseAfterLines != null,
+            visible = isExpanded || overflows,
+            isExpanded = isExpanded,
+            onClick = onToggleExpanded,
+        )
+    }
 }
 
 /**
@@ -387,31 +400,72 @@ private fun LogGroupItem(
     row: LogRow,
     collapseAfterLines: Int?,
     expandedLogs: Set<VlogModel>,
-    onToggleExpanded: (VlogModel) -> Unit,
+    onToggleExpanded: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface
     val accent = MaterialTheme.colorScheme.outline
+    // The logs of this row that are cut off while collapsed
+    val overflowing = remember(row) { mutableStateMapOf<VlogModel, Boolean>() }
+    val isExpanded = row.logs.all { it in expandedLogs }
 
-    Column(
+    Row(
         modifier
             .fillMaxWidth()
             .background(onSurface.copy(alpha = 0.04f))
             .drawBehind { drawRect(accent, size = Size(GROUP_BAR_WIDTH.toPx(), size.height)) }
             .padding(start = 16.dp, end = 10.dp, top = 15.dp, bottom = 15.dp),
     ) {
-        Text(
-            text = row.id.orEmpty(),
-            color = onSurface.copy(alpha = 0.6f),
-            fontSize = 12.sp,
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = row.id.orEmpty(),
+                color = onSurface.copy(alpha = 0.6f),
+                fontSize = 12.sp,
+            )
+            row.logs.forEach { log ->
+                LogEntry(
+                    log = log,
+                    collapseAfterLines = collapseAfterLines,
+                    isExpanded = log in expandedLogs,
+                    onOverflowChange = { overflowing[log] = it },
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+        }
+        CollapseArrow(
+            enabled = collapseAfterLines != null,
+            visible = row.logs.any { it in expandedLogs } || overflowing.values.any { it },
+            isExpanded = isExpanded,
+            onClick = onToggleExpanded,
         )
-        row.logs.forEach { log ->
-            LogEntry(
-                log = log,
-                collapseAfterLines = collapseAfterLines,
-                isExpanded = log in expandedLogs,
-                onToggleExpanded = { onToggleExpanded(log) },
-                modifier = Modifier.padding(top = 8.dp),
+    }
+}
+
+/**
+ * The arrow at the end of a row that opens or closes its collapsed logs. Its room is kept while collapsing
+ * is [enabled], so the message keeps its width when the arrow shows up. It is [visible] only for a row with
+ * a log that is cut off, or that was opened.
+ */
+@Composable
+private fun CollapseArrow(
+    enabled: Boolean,
+    visible: Boolean,
+    isExpanded: Boolean,
+    onClick: () -> Unit,
+) {
+    if (!enabled) return
+
+    Box(Modifier.size(ARROW_SLOT_SIZE)) {
+        if (visible) {
+            Icon(
+                painter = painterResource(if (isExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down),
+                contentDescription = stringResource(if (isExpanded) R.string.show_less else R.string.show_more),
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .clickable(onClick = onClick)
+                        .padding(8.dp),
             )
         }
     }
@@ -419,7 +473,8 @@ private fun LogGroupItem(
 
 /**
  * One log: its priority and tag, then its message. A long message or tag wraps to more lines. Only when
- * [collapseAfterLines] is set is a message that needs more lines cut off, with an arrow to show it in full.
+ * [collapseAfterLines] is set is a message that needs more lines cut off. The arrow that shows it in full
+ * is not here, it is the row's, so a group has one for all its logs.
  *
  * @param collapseAfterLines the lines a collapsed message keeps, null never collapses
  * @param isExpanded whether the user showed the message in full
@@ -429,13 +484,11 @@ private fun LogEntry(
     log: VlogModel,
     collapseAfterLines: Int?,
     isExpanded: Boolean,
-    onToggleExpanded: () -> Unit,
+    onOverflowChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val levelColors = LocalVlogColors.current.forPriority(log.logPriority)
     val color = levelColors.text
-    // Whether the message needs more lines than it is allowed while collapsed, known after it was laid out
-    var overflows by remember(log) { mutableStateOf(false) }
     val maxLines = if (collapseAfterLines != null && !isExpanded) collapseAfterLines else Int.MAX_VALUE
 
     Row(modifier.height(IntrinsicSize.Min)) {
@@ -459,27 +512,9 @@ private fun LogEntry(
                 fontSize = 14.sp,
                 maxLines = maxLines,
                 overflow = TextOverflow.Ellipsis,
-                onTextLayout = { if (!isExpanded) overflows = it.hasVisualOverflow },
+                onTextLayout = { if (!isExpanded) onOverflowChange(it.hasVisualOverflow) },
                 modifier = Modifier.padding(top = 3.dp),
             )
-        }
-        if (collapseAfterLines != null) {
-            // The slot is always there while collapsing is on, so the message keeps its width when the arrow
-            // shows up. Only logs that are cut off, or that were opened, get the arrow. Short logs never do.
-            Box(Modifier.size(ARROW_SLOT_SIZE)) {
-                if (isExpanded || overflows) {
-                    Icon(
-                        painter = painterResource(if (isExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down),
-                        contentDescription = stringResource(if (isExpanded) R.string.show_less else R.string.show_more),
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier =
-                            Modifier
-                                .fillMaxSize()
-                                .clickable(onClick = onToggleExpanded)
-                                .padding(8.dp),
-                    )
-                }
-            }
         }
     }
 }

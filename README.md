@@ -107,7 +107,7 @@ vlog.setCollapseLongLogs(true)       // a log keeps its first 5 lines
 vlog.setCollapseLongLogs(true, 3)    // or the number of lines you want
 vlog.setCollapseLongLogs(false)      // back to showing every log in full
 ```
-A log that needs more lines is cut off with an ellipsis and gets a down arrow on its right, which turns into an up arrow once the log is open. Logs that fit get no arrow. A log you opened stays open while you scroll. It takes effect right away, also when the viewer is already showing.
+A log that needs more lines is cut off with an ellipsis and gets a down arrow on its right, which turns into an up arrow once the log is open. Logs that fit get no arrow. The arrow belongs to the row: logs grouped by `id` share one arrow that opens or closes all of them. A log you opened stays open while you scroll. It takes effect right away, also when the viewer is already showing.
 
 ### Title
 The title of the log viewer is the name, version name and version code of your app, for example `My App v1.2.0 (42)`. If the name of your app is too long for the title, hide it and keep the version info, `v1.2.0 (42)`. It takes effect right away, also when the viewer is already showing:
