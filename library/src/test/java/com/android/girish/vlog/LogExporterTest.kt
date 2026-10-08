@@ -70,6 +70,20 @@ class LogExporterTest {
     }
 
     @Test
+    fun formatPutsTheIdOfAGroupedLogAfterTheTag() {
+        val logs =
+            listOf(
+                VlogModel(VlogModel.INFO, "Net", "--> GET /a", id = "GET /a #1", timestamp = now),
+                VlogModel(VlogModel.INFO, "Ui", "no id", timestamp = now),
+            )
+
+        val lines = LogExporter.format("My App", now, logs).lines().filter { it.isNotEmpty() }
+
+        assertTrue(lines[1].endsWith("I/Net [GET /a #1]: --> GET /a"))
+        assertTrue(lines[2].endsWith("I/Ui: no id"))
+    }
+
+    @Test
     fun formatWritesAHeaderAndOneLinePerLogInOrder() {
         val logs =
             listOf(

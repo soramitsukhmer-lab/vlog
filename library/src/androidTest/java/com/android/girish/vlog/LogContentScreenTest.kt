@@ -24,11 +24,13 @@
 
 package com.android.girish.vlog
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -78,6 +80,19 @@ class LogContentScreenTest {
         setScreen()
 
         composeRule.onNodeWithText("Sample App v1.2").assertIsDisplayed()
+    }
+
+    @Test
+    fun logsWithTheSameIdShareARowShowingTheId() {
+        val request = VlogModel(VlogModel.INFO, "Net", "--> GET /a", id = "GET /a #1")
+        val response = VlogModel(VlogModel.ERROR, "Net", "<-- 500 /a", id = "GET /a #1")
+        setScreen(logs = listOf(shortLog, request, response), tags = emptyList())
+
+        // One id label for the two logs, and both of them are shown
+        composeRule.onAllNodesWithText("GET /a #1").assertCountEquals(1)
+        composeRule.onNodeWithText("--> GET /a").assertIsDisplayed()
+        composeRule.onNodeWithText("<-- 500 /a").assertIsDisplayed()
+        composeRule.onNodeWithText("A short message").assertIsDisplayed()
     }
 
     @Test

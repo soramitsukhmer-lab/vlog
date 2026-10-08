@@ -202,43 +202,59 @@ class Vlog private constructor(
         }
     }
 
+    /**
+     * Logs a verbose message. The same goes for [d], [i], [w] and [e].
+     *
+     * @param id logs with the same id are shown in one row of the log viewer, for example the request and the
+     * response of a network call. Leave it out for a log that stands on its own.
+     */
+    @JvmOverloads
     fun v(
         tag: String,
         msg: String,
+        id: String? = null,
     ) {
-        val model = VlogModel(VlogModel.VERBOSE, tag, msg)
+        val model = VlogModel(VlogModel.VERBOSE, tag, msg, id)
         feed(model)
     }
 
+    @JvmOverloads
     fun d(
         tag: String,
         msg: String,
+        id: String? = null,
     ) {
-        val model = VlogModel(VlogModel.DEBUG, tag, msg)
+        val model = VlogModel(VlogModel.DEBUG, tag, msg, id)
         feed(model)
     }
 
+    @JvmOverloads
     fun i(
         tag: String,
         msg: String,
+        id: String? = null,
     ) {
-        val model = VlogModel(VlogModel.INFO, tag, msg)
+        val model = VlogModel(VlogModel.INFO, tag, msg, id)
         feed(model)
     }
 
+    @JvmOverloads
     fun w(
         tag: String,
         msg: String,
+        id: String? = null,
     ) {
-        val model = VlogModel(VlogModel.WARN, tag, msg)
+        val model = VlogModel(VlogModel.WARN, tag, msg, id)
         feed(model)
     }
 
+    @JvmOverloads
     fun e(
         tag: String,
         msg: String,
+        id: String? = null,
     ) {
-        val model = VlogModel(VlogModel.ERROR, tag, msg)
+        val model = VlogModel(VlogModel.ERROR, tag, msg, id)
         feed(model)
     }
 

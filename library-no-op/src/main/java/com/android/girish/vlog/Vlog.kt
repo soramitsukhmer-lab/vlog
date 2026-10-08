@@ -45,29 +45,39 @@ class Vlog private constructor(
 
     fun openBubbleSettings() {}
 
+    @JvmOverloads
     fun v(
         tag: String,
         msg: String,
+        id: String? = null,
     ) {}
 
+    @JvmOverloads
     fun d(
         tag: String,
         msg: String,
+        id: String? = null,
     ) {}
 
+    @JvmOverloads
     fun i(
         tag: String,
         msg: String,
+        id: String? = null,
     ) {}
 
+    @JvmOverloads
     fun w(
         tag: String,
         msg: String,
+        id: String? = null,
     ) {}
 
+    @JvmOverloads
     fun e(
         tag: String,
         msg: String,
+        id: String? = null,
     ) {}
 
     enum class Mode {

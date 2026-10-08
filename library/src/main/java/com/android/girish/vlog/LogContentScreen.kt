@@ -67,6 +67,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -81,6 +83,9 @@ import androidx.compose.ui.unit.sp
 
 private const val COLLAPSED_MESSAGE_LENGTH = 50
 private const val EXPANDED_MESSAGE_MAX_LINES = 20
+
+// The bar on the left of the rows that group logs
+private val GROUP_BAR_WIDTH = 4.dp
 
 // A set of strings is not something a bundle can hold, a list is
 private val TagSelectionSaver = listSaver<Set<String>, String>(save = { it.toList() }, restore = { it.toSet() })
@@ -116,6 +121,7 @@ internal fun LogContentScreen(
     // Only one log is expanded at a time, logs have no equality so this is an identity match
     var expandedLog by remember { mutableStateOf<VlogModel?>(null) }
     var selectedTags by rememberSaveable(stateSaver = TagSelectionSaver) { mutableStateOf(emptySet<String>()) }
+    val rows = remember(logs) { groupLogs(logs) }
 
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -149,16 +155,19 @@ internal fun LogContentScreen(
             },
         )
         LazyColumn(Modifier.weight(1f)) {
-            items(logs) { log ->
-                val isExpanded = log == expandedLog
-                LogItem(
-                    log = log,
-                    isExpanded = isExpanded,
-                    onClick = {
-                        dismissKeyboard()
-                        expandedLog = if (isExpanded) null else log
-                    },
-                )
+            items(rows) { row ->
+                // A row is expanded by its first log, which stays the same while the row grows
+                val first = row.logs.first()
+                val isExpanded = first == expandedLog
+                val onClick = {
+                    dismissKeyboard()
+                    expandedLog = if (isExpanded) null else first
+                }
+                if (row.id == null) {
+                    LogItem(log = first, isExpanded = isExpanded, onClick = onClick)
+                } else {
+                    LogGroupItem(row = row, isExpanded = isExpanded, onClick = onClick)
+                }
                 HorizontalDivider()
             }
         }
@@ -332,6 +341,66 @@ private fun LogItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    Row(
+        modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 15.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        LogEntry(log, isExpanded, Modifier.weight(1f))
+        ExpandArrow(isExpanded)
+    }
+}
+
+/**
+ * The logs that share an id in one row: the id on top, then every log with its own priority and tag. The
+ * row is tinted and has a bar on its left, so it stands out from the logs that stand on their own.
+ */
+@Composable
+private fun LogGroupItem(
+    row: LogRow,
+    isExpanded: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val accent = MaterialTheme.colorScheme.outline
+
+    Row(
+        modifier
+            .fillMaxWidth()
+            .background(onSurface.copy(alpha = 0.04f))
+            .drawBehind { drawRect(accent, size = Size(GROUP_BAR_WIDTH.toPx(), size.height)) }
+            .clickable(onClick = onClick)
+            .padding(start = 16.dp, top = 15.dp, bottom = 15.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = row.id.orEmpty(),
+                color = onSurface.copy(alpha = 0.6f),
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            row.logs.forEach { log ->
+                LogEntry(log, isExpanded, Modifier.padding(top = 8.dp))
+            }
+        }
+        ExpandArrow(isExpanded)
+    }
+}
+
+/**
+ * One log: its priority and tag, then its message. The message is cut when collapsed.
+ */
+@Composable
+private fun LogEntry(
+    log: VlogModel,
+    isExpanded: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val color =
         when (log.logPriority) {
             VlogModel.ERROR -> LocalVlogColors.current.error
@@ -345,36 +414,32 @@ private fun LogItem(
             log.logMessage.substring(0, COLLAPSED_MESSAGE_LENGTH - 1) + "..."
         }
 
-    Row(
-        modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 15.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = "${log.priorityInitial()}/${log.tag}: ",
-                color = color,
-                fontSize = 14.sp,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = message,
-                color = color,
-                fontSize = 14.sp,
-                maxLines = EXPANDED_MESSAGE_MAX_LINES,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 3.dp),
-            )
-        }
-        Icon(
-            painter = painterResource(if (isExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(end = 10.dp),
+    Column(modifier) {
+        Text(
+            text = "${log.priorityInitial()}/${log.tag}: ",
+            color = color,
+            fontSize = 14.sp,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = message,
+            color = color,
+            fontSize = 14.sp,
+            maxLines = EXPANDED_MESSAGE_MAX_LINES,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 3.dp),
         )
     }
+}
+
+@Composable
+private fun ExpandArrow(isExpanded: Boolean) {
+    Icon(
+        painter = painterResource(if (isExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down),
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.padding(end = 10.dp),
+    )
 }
 
 internal fun VlogModel.priorityInitial(): String =
@@ -397,7 +462,9 @@ private fun LogContentScreenPreview() {
                 listOf(
                     VlogModel(VlogModel.VERBOSE, "Surface", "Test log with verbose priority"),
                     VlogModel(VlogModel.DEBUG, "DecorView", "Test log with debug priority"),
+                    VlogModel(VlogModel.INFO, "Network", "--> POST /login {\"user\":\"sora\"}", id = "POST /login #1"),
                     VlogModel(VlogModel.INFO, "Surface", "Test log with info priority"),
+                    VlogModel(VlogModel.ERROR, "Network", "<-- 401 /login {\"error\":\"invalid\"}", id = "POST /login #1"),
                     VlogModel(VlogModel.WARN, "DecorView", "Test log with warn priority for a message that is long enough to be truncated"),
                     VlogModel(VlogModel.ERROR, "Choreographer", "Test log with error priority"),
                 ),

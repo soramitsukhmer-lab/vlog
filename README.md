@@ -90,6 +90,16 @@ vlog.stop()
 vlog.isEnabled() // returns true if vlog.start() was called
 ```
 
+### Grouping logs
+Logs that belong together, such as the request and the response of a network call, can share a row of the log viewer. Pass the same `id` to each of them:
+```kotlin
+val id = "GET /users #$requestNumber"
+vlog.i("Network", "--> GET /users", id)
+// ... later
+vlog.i("Network", "<-- 200 /users", id)
+```
+The row sits at the position of the oldest log of the group, shows the id on top and every log below it with its own priority and tag. A group is kept whole by the filters: if only one of its logs matches a keyword, the other logs of the group are shown with it. Logs without an id keep a row of their own, so existing calls need no change.
+
 ### Title
 The title of the log viewer is the name, version name and version code of your app, for example `My App v1.2.0 (42)`. If the name of your app is too long for the title, hide it and keep the version info, `v1.2.0 (42)`. It takes effect right away, also when the viewer is already showing:
 ```kotlin

@@ -131,6 +131,7 @@ internal class VlogRepository(
         for (filter in mFilters) {
             filteredList = filter.meetCriteria(filteredList)
         }
+        filteredList = expandGroups(allLogs, filteredList)
 
         // Offered tags come from every log, not just the shown ones, or the chips would vanish once one is
         // picked. Selected tags stay even when their logs were cleared so they can still be deselected.

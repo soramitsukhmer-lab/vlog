@@ -113,7 +113,9 @@ internal object LogExporter {
         return buildString {
             appendLine("$title, logs of the last ${RECENT_WINDOW_MS / 1000} seconds, exported ${timeFormat.format(Date(now))}")
             logs.forEach {
-                appendLine("${timeFormat.format(Date(it.timestamp))} ${it.priorityInitial()}/${it.tag}: ${it.logMessage}")
+                // The id of a grouped log goes after the tag, so the logs of one group can still be matched
+                val id = it.id?.let { id -> " [$id]" }.orEmpty()
+                appendLine("${timeFormat.format(Date(it.timestamp))} ${it.priorityInitial()}/${it.tag}$id: ${it.logMessage}")
             }
         }
     }

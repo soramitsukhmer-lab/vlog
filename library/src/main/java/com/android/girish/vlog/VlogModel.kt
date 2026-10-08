@@ -6,6 +6,8 @@ internal class VlogModel(
     @param:LogPriority val logPriority: Int,
     val tag: String,
     val logMessage: String,
+    // Logs with the same id are shown in one row, null for a log that stands on its own
+    val id: String? = null,
     // When the log was written, in milliseconds since the epoch
     val timestamp: Long = System.currentTimeMillis(),
 ) {
