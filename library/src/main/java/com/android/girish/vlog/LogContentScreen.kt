@@ -31,6 +31,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -39,6 +40,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -47,6 +49,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,6 +62,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -77,6 +82,9 @@ import androidx.compose.ui.unit.sp
 private const val COLLAPSED_MESSAGE_LENGTH = 50
 private const val EXPANDED_MESSAGE_MAX_LINES = 20
 
+// A set of strings is not something a bundle can hold, a list is
+private val TagSelectionSaver = listSaver<Set<String>, String>(save = { it.toList() }, restore = { it.toSet() })
+
 /**
  * The log viewer: a top app bar (app title, an export action and a clear action), a filter bar (priority
  * and keyword) and the list of logs.
@@ -86,8 +94,10 @@ private const val EXPANDED_MESSAGE_MAX_LINES = 20
  *
  * @param title the title shown in the header, usually the name and version of the app using Vlog
  * @param logs the logs to show
+ * @param tags the tags to offer as filter chips, none hides the chips
  * @param onKeywordChange called when the user edits the filter keyword
  * @param onPriorityIndexSelected called with the position in `log_priority_names` the user picked
+ * @param onTagsSelected called with the selected tags when the user toggles a chip, none means every tag
  * @param onClearLogs called when the user taps Clear
  * @param onExportLogs called with the logs that are shown when the user taps Export
  */
@@ -95,14 +105,17 @@ private const val EXPANDED_MESSAGE_MAX_LINES = 20
 internal fun LogContentScreen(
     title: String,
     logs: List<VlogModel>,
+    tags: List<String>,
     onKeywordChange: (String) -> Unit,
     onPriorityIndexSelected: (Int) -> Unit,
+    onTagsSelected: (Set<String>) -> Unit,
     onClearLogs: () -> Unit,
     onExportLogs: (List<VlogModel>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // Only one log is expanded at a time, logs have no equality so this is an identity match
     var expandedLog by remember { mutableStateOf<VlogModel?>(null) }
+    var selectedTags by rememberSaveable(stateSaver = TagSelectionSaver) { mutableStateOf(emptySet<String>()) }
 
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -125,6 +138,15 @@ internal fun LogContentScreen(
         LogFilterBar(
             onKeywordChange = onKeywordChange,
             onPriorityIndexSelected = onPriorityIndexSelected,
+        )
+        LogTagChips(
+            tags = tags,
+            selectedTags = selectedTags,
+            onToggle = { tag ->
+                dismissKeyboard()
+                selectedTags = if (tag in selectedTags) selectedTags - tag else selectedTags + tag
+                onTagsSelected(selectedTags)
+            },
         )
         LazyColumn(Modifier.weight(1f)) {
             items(logs) { log ->
@@ -250,6 +272,41 @@ private fun LogFilterBar(
     }
 }
 
+/**
+ * A row of chips to filter the logs by tag. It scrolls sideways when the tags do not fit, and shows nothing
+ * while there are no tags.
+ */
+@Composable
+private fun LogTagChips(
+    tags: List<String>,
+    selectedTags: Set<String>,
+    onToggle: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (tags.isEmpty()) return
+
+    val vlogColors = LocalVlogColors.current
+    LazyRow(
+        modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 5.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(tags, key = { it }) { tag ->
+            FilterChip(
+                selected = tag in selectedTags,
+                onClick = { onToggle(tag) },
+                label = { Text(tag, maxLines = 1) },
+                colors =
+                    FilterChipDefaults.filterChipColors(
+                        labelColor = MaterialTheme.colorScheme.onSurface,
+                        selectedContainerColor = vlogColors.button,
+                        selectedLabelColor = vlogColors.buttonText,
+                    ),
+            )
+        }
+    }
+}
+
 @Composable
 private fun LogButton(
     onClick: () -> Unit,
@@ -344,8 +401,10 @@ private fun LogContentScreenPreview() {
                     VlogModel(VlogModel.WARN, "DecorView", "Test log with warn priority for a message that is long enough to be truncated"),
                     VlogModel(VlogModel.ERROR, "Choreographer", "Test log with error priority"),
                 ),
+            tags = listOf("Surface", "DecorView", "Choreographer"),
             onKeywordChange = {},
             onPriorityIndexSelected = {},
+            onTagsSelected = {},
             onClearLogs = {},
             onExportLogs = {},
         )

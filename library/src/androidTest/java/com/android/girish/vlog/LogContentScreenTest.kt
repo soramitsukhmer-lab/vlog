@@ -50,8 +50,10 @@ class LogContentScreenTest {
 
     private fun setScreen(
         logs: List<VlogModel> = listOf(shortLog, longLog),
+        tags: List<String> = listOf("Surface", "Choreographer"),
         onKeywordChange: (String) -> Unit = {},
         onPriorityIndexSelected: (Int) -> Unit = {},
+        onTagsSelected: (Set<String>) -> Unit = {},
         onClearLogs: () -> Unit = {},
         onExportLogs: (List<VlogModel>) -> Unit = {},
     ) {
@@ -60,8 +62,10 @@ class LogContentScreenTest {
                 LogContentScreen(
                     title = "Sample App v1.2",
                     logs = logs,
+                    tags = tags,
                     onKeywordChange = onKeywordChange,
                     onPriorityIndexSelected = onPriorityIndexSelected,
+                    onTagsSelected = onTagsSelected,
                     onClearLogs = onClearLogs,
                     onExportLogs = onExportLogs,
                 )
@@ -74,6 +78,36 @@ class LogContentScreenTest {
         setScreen()
 
         composeRule.onNodeWithText("Sample App v1.2").assertIsDisplayed()
+    }
+
+    @Test
+    fun showsAChipForEveryTag() {
+        setScreen()
+
+        composeRule.onNodeWithText("Surface").assertIsDisplayed()
+        composeRule.onNodeWithText("Choreographer").assertIsDisplayed()
+    }
+
+    @Test
+    fun showsNoChipsWithoutTags() {
+        setScreen(tags = emptyList())
+
+        composeRule.onNodeWithText("Surface").assertDoesNotExist()
+    }
+
+    @Test
+    fun togglingChipsReportsTheSelectedTags() {
+        val reported = mutableListOf<Set<String>>()
+        setScreen(onTagsSelected = { reported.add(it) })
+
+        composeRule.onNodeWithText("Surface").performClick()
+        composeRule.onNodeWithText("Choreographer").performClick()
+        composeRule.onNodeWithText("Surface").performClick()
+
+        assertEquals(
+            listOf(setOf("Surface"), setOf("Surface", "Choreographer"), setOf("Choreographer")),
+            reported,
+        )
     }
 
     @Test

@@ -48,11 +48,14 @@ internal class VlogBubbleActivity : ComponentActivity() {
         setContent {
             VlogTheme {
                 val logs by viewModel.resultObserver.observeAsState(emptyList())
+                val tags by viewModel.tagsObserver.observeAsState(emptyList())
                 LogContentScreen(
                     title = remember(VlogOptions.showAppName) { getAppTitle(VlogOptions.showAppName) },
                     logs = logs,
+                    tags = tags,
                     onKeywordChange = viewModel::onKeywordEnter,
                     onPriorityIndexSelected = viewModel::onPriorityIndexSelected,
+                    onTagsSelected = viewModel::onTagsSelected,
                     onClearLogs = viewModel::onClearLogs,
                     onExportLogs = { LogExporter.exportRecent(this@VlogBubbleActivity, it) },
                     // The bubble is drawn edge to edge, keep the viewer off the system bars and the edges

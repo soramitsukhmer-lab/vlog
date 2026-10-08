@@ -11,12 +11,28 @@ internal class ContentViewModel(
     VlogRepository.ResultListener {
     val resultObserver = MutableLiveData<List<VlogModel>>()
 
+    // The tags to offer as filter
+    val tagsObserver = MutableLiveData<List<String>>()
+
     init {
         mVlogRepository.setResultListener(this)
     }
 
     override fun onFilterResults(filterResults: List<VlogModel>) {
         resultObserver.setValue(filterResults)
+    }
+
+    override fun onTagsAvailable(tags: List<String>) {
+        tagsObserver.setValue(tags)
+    }
+
+    /**
+     * This method is called by the view when user selects the tags to show, none means every tag
+     *
+     * @param tags
+     */
+    fun onTagsSelected(tags: Set<String>) {
+        mVlogRepository.configureTags(tags)
     }
 
     /**

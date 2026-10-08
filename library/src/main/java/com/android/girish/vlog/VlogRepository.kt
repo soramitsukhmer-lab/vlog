@@ -9,6 +9,7 @@ import com.android.girish.vlog.VlogModel.LogPriority
 import com.android.girish.vlog.filter.Criteria
 import com.android.girish.vlog.filter.KeywordFilter
 import com.android.girish.vlog.filter.PriorityFilter
+import com.android.girish.vlog.filter.TagFilter
 
 /**
  * Filter manager
@@ -22,6 +23,7 @@ internal class VlogRepository(
     private val handler: Handler = Handler(Looper.getMainLooper())
     private val mKeywordFilter = KeywordFilter()
     private val mPriorityFilter = PriorityFilter()
+    private val mTagFilter = TagFilter()
     private val mFilters: List<Criteria<VlogModel>>
     private val mVlogs: MutableList<VlogModel>
     private var mResultListener: ResultListener? = null
@@ -30,6 +32,7 @@ internal class VlogRepository(
         mFilters = ArrayList()
         mFilters.add(mKeywordFilter)
         mFilters.add(mPriorityFilter)
+        mFilters.add(mTagFilter)
         mVlogs = mutableListOf()
     }
 
@@ -83,6 +86,16 @@ internal class VlogRepository(
     }
 
     /**
+     * pre-configures the tags to show, none means every tag
+     *
+     * @param tags
+     */
+    fun configureTags(tags: Set<String>) {
+        mTagFilter.setTags(tags)
+        initiateFilter()
+    }
+
+    /**
      * Result listener
      *
      * @constructor Create empty Result listener
@@ -94,18 +107,37 @@ internal class VlogRepository(
          * @param filterResults
          */
         fun onFilterResults(filterResults: List<VlogModel>)
+
+        /**
+         * On tags available, the tags to offer as filter, the tags of every log and the selected tags
+         *
+         * @param tags
+         */
+        fun onTagsAvailable(tags: List<String>)
     }
+
+    /**
+     * The outcome of a filter run: the logs to show and the tags to offer
+     */
+    private class FilterOutput(
+        val logs: List<VlogModel>,
+        val tags: List<String>,
+    )
 
     @WorkerThread
     override fun performFiltering(constraint: CharSequence?): FilterResults {
-        var filteredList: List<VlogModel> = mVlogs
+        val allLogs: List<VlogModel> = mVlogs
+        var filteredList: List<VlogModel> = allLogs
         for (filter in mFilters) {
             filteredList = filter.meetCriteria(filteredList)
         }
 
+        // Offered tags come from every log, not just the shown ones, or the chips would vanish once one is
+        // picked. Selected tags stay even when their logs were cleared so they can still be deselected.
+        val tags = (allLogs.map { it.tag } + mTagFilter.selectedTags).distinct()
+
         val filterResult = FilterResults()
-        filterResult.values = filteredList
-        filterResult.count = filterResult.count
+        filterResult.values = FilterOutput(filteredList, tags)
         return filterResult
     }
 
@@ -114,7 +146,9 @@ internal class VlogRepository(
         constraint: CharSequence?,
         results: FilterResults?,
     ) {
-        mResultListener?.onFilterResults(results?.values as List<VlogModel>)
+        val output = results?.values as? FilterOutput ?: return
+        mResultListener?.onFilterResults(output.logs)
+        mResultListener?.onTagsAvailable(output.tags)
     }
 
     /**

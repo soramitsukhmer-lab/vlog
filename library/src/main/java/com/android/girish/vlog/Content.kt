@@ -26,6 +26,9 @@ internal class Content(
     private val logs = mutableStateOf<List<VlogModel>>(emptyList())
     private val logObserver = Observer<List<VlogModel>> { logs.value = it }
 
+    private val tags = mutableStateOf<List<String>>(emptyList())
+    private val tagsObserver = Observer<List<String>> { tags.value = it }
+
     init {
         addView(
             ComposeView(context).apply {
@@ -34,8 +37,10 @@ internal class Content(
                         LogContentScreen(
                             title = remember(VlogOptions.showAppName) { context.getAppTitle(VlogOptions.showAppName) },
                             logs = logs.value,
+                            tags = tags.value,
                             onKeywordChange = mContentViewModel::onKeywordEnter,
                             onPriorityIndexSelected = mContentViewModel::onPriorityIndexSelected,
+                            onTagsSelected = mContentViewModel::onTagsSelected,
                             onClearLogs = mContentViewModel::onClearLogs,
                             onExportLogs = { LogExporter.exportRecent(context, it) },
                             // Leaves room for the chat head above the content
@@ -60,6 +65,7 @@ internal class Content(
         scaleSpring.currentValue = 0.0
 
         mContentViewModel.resultObserver.observeForever(logObserver)
+        mContentViewModel.tagsObserver.observeForever(tagsObserver)
     }
 
     /**
@@ -68,6 +74,7 @@ internal class Content(
      */
     fun release() {
         mContentViewModel.resultObserver.removeObserver(logObserver)
+        mContentViewModel.tagsObserver.removeObserver(tagsObserver)
     }
 
     fun hideContent() {
