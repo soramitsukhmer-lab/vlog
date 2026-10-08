@@ -31,12 +31,15 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -86,6 +89,9 @@ private const val EXPANDED_MESSAGE_MAX_LINES = 20
 
 // The bar on the left of the rows that group logs
 private val GROUP_BAR_WIDTH = 4.dp
+
+// The bar of a log that shows its level
+private val ACCENT_BAR_WIDTH = 4.dp
 
 // A set of strings is not something a bundle can hold, a list is
 private val TagSelectionSaver = listSaver<Set<String>, String>(save = { it.toList() }, restore = { it.toSet() })
@@ -401,12 +407,8 @@ private fun LogEntry(
     isExpanded: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val color =
-        when (log.logPriority) {
-            VlogModel.ERROR -> LocalVlogColors.current.error
-            VlogModel.WARN -> LocalVlogColors.current.warn
-            else -> MaterialTheme.colorScheme.onSurface
-        }
+    val levelColors = LocalVlogColors.current.forPriority(log.logPriority)
+    val color = levelColors.text
     val message =
         if (isExpanded || log.logMessage.length <= COLLAPSED_MESSAGE_LENGTH) {
             log.logMessage
@@ -414,21 +416,31 @@ private fun LogEntry(
             log.logMessage.substring(0, COLLAPSED_MESSAGE_LENGTH - 1) + "..."
         }
 
-    Column(modifier) {
-        Text(
-            text = "${log.priorityInitial()}/${log.tag}: ",
-            color = color,
-            fontSize = 14.sp,
-            overflow = TextOverflow.Ellipsis,
+    Row(modifier.height(IntrinsicSize.Min)) {
+        // The bar tells the level at a glance, also in a group where every log has its own level
+        Box(
+            Modifier
+                .width(ACCENT_BAR_WIDTH)
+                .fillMaxHeight()
+                .background(levelColors.accent, RoundedCornerShape(2.dp)),
         )
-        Text(
-            text = message,
-            color = color,
-            fontSize = 14.sp,
-            maxLines = EXPANDED_MESSAGE_MAX_LINES,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 3.dp),
-        )
+        Spacer(Modifier.width(8.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = "${log.priorityInitial()}/${log.tag}: ",
+                color = color,
+                fontSize = 14.sp,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = message,
+                color = color,
+                fontSize = 14.sp,
+                maxLines = EXPANDED_MESSAGE_MAX_LINES,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 3.dp),
+            )
+        }
     }
 }
 
@@ -469,6 +481,40 @@ private fun LogContentScreenPreview() {
                     VlogModel(VlogModel.ERROR, "Choreographer", "Test log with error priority"),
                 ),
             tags = listOf("Surface", "DecorView", "Choreographer"),
+            onKeywordChange = {},
+            onPriorityIndexSelected = {},
+            onTagsSelected = {},
+            onClearLogs = {},
+            onExportLogs = {},
+        )
+    }
+}
+
+// A host app with a dark theme: only the surface and the text are set, the level colors follow the surface
+@Preview(showBackground = true, backgroundColor = 0xFF1E1E1E, heightDp = 560)
+@Composable
+private fun LogContentScreenDarkPreview() {
+    VlogTheme(
+        VlogThemeConfig(
+            surfaceColor = 0xFF1E1E1E.toInt(),
+            textColor = 0xFFEEEEEE.toInt(),
+            hintColor = 0x99EEEEEE.toInt(),
+            outlineColor = 0xFF777777.toInt(),
+            buttonColor = 0xFF3A3A3A.toInt(),
+            buttonTextColor = 0xFFEEEEEE.toInt(),
+        ),
+    ) {
+        LogContentScreen(
+            title = "Vlog Sample v1.0 (1)",
+            logs =
+                listOf(
+                    VlogModel(VlogModel.VERBOSE, "Surface", "Test log with verbose priority"),
+                    VlogModel(VlogModel.DEBUG, "Surface", "Test log with debug priority"),
+                    VlogModel(VlogModel.INFO, "Surface", "Test log with info priority"),
+                    VlogModel(VlogModel.WARN, "Surface", "Test log with warn priority"),
+                    VlogModel(VlogModel.ERROR, "Surface", "Test log with error priority"),
+                ),
+            tags = emptyList(),
             onKeywordChange = {},
             onPriorityIndexSelected = {},
             onTagsSelected = {},

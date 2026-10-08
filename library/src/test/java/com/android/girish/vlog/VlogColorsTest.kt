@@ -24,21 +24,37 @@
 
 package com.android.girish.vlog
 
-/**
- * No-op implementation, has the same shape as the real one so host code compiles against both.
- */
-data class VlogThemeConfig
-    @JvmOverloads
-    constructor(
-        val surfaceColor: Int? = null,
-        val textColor: Int? = null,
-        val hintColor: Int? = null,
-        val outlineColor: Int? = null,
-        val buttonColor: Int? = null,
-        val buttonTextColor: Int? = null,
-        val warnColor: Int? = null,
-        val errorColor: Int? = null,
-        val verboseColor: Int? = null,
-        val debugColor: Int? = null,
-        val infoColor: Int? = null,
-    )
+import androidx.compose.ui.graphics.Color
+import org.junit.Assert.assertSame
+import org.junit.Test
+
+class VlogColorsTest {
+    private fun level(value: Long) = LevelColors(text = Color(value), accent = Color(value))
+
+    private val verbose = level(0xFF000001)
+    private val debug = level(0xFF000002)
+    private val info = level(0xFF000003)
+    private val warn = level(0xFF000004)
+    private val error = level(0xFF000005)
+    private val colors =
+        VlogColors(
+            inputText = Color.Black,
+            hint = Color.Gray,
+            button = Color.LightGray,
+            buttonText = Color.Black,
+            verbose = verbose,
+            debug = debug,
+            info = info,
+            warn = warn,
+            error = error,
+        )
+
+    @Test
+    fun everyPriorityGetsItsOwnLevelColors() {
+        assertSame(verbose, colors.forPriority(VlogModel.VERBOSE))
+        assertSame(debug, colors.forPriority(VlogModel.DEBUG))
+        assertSame(info, colors.forPriority(VlogModel.INFO))
+        assertSame(warn, colors.forPriority(VlogModel.WARN))
+        assertSame(error, colors.forPriority(VlogModel.ERROR))
+    }
+}

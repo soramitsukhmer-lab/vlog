@@ -35,7 +35,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.colorResource
+import com.android.girish.vlog.VlogModel.LogPriority
 
 /**
  * The theme chosen by the host app through [Vlog.setTheme]. It is snapshot state, so a viewer that is
@@ -54,8 +56,37 @@ internal class VlogColors(
     val hint: Color,
     val button: Color,
     val buttonText: Color,
-    val warn: Color,
-    val error: Color,
+    val verbose: LevelColors,
+    val debug: LevelColors,
+    val info: LevelColors,
+    val warn: LevelColors,
+    val error: LevelColors,
+) {
+    /**
+     * The colors for a log of the given priority
+     */
+    fun forPriority(
+        @LogPriority priority: Int,
+    ): LevelColors =
+        when (priority) {
+            VlogModel.ERROR -> error
+            VlogModel.WARN -> warn
+            VlogModel.INFO -> info
+            VlogModel.DEBUG -> debug
+            else -> verbose
+        }
+}
+
+/**
+ * The colors of one log level.
+ *
+ * @property text the text of the logs, it has to be readable on the surface
+ * @property accent the bar next to the logs, a bar needs less contrast than text so this is more saturated
+ */
+@Immutable
+internal class LevelColors(
+    val text: Color,
+    val accent: Color,
 )
 
 internal val LocalVlogColors =
@@ -74,14 +105,26 @@ internal fun VlogTheme(
 ) {
     val text = config.textColor.orDefault(Color.Black)
     val surface = config.surfaceColor.orDefault(R.color.white_bg)
+    // The level colors have to be readable on the surface, so they follow how light or dark it is
+    val isDark = surface.luminance() < 0.5f
     val vlogColors =
         VlogColors(
             inputText = config.textColor.orDefault(R.color.editTextColor),
             hint = config.hintColor.orDefault(R.color.editTextColorHint),
             button = config.buttonColor.orDefault(R.color.button_bg),
             buttonText = config.buttonTextColor.orDefault(text),
-            warn = config.warnColor.orDefault(R.color.log_warn),
-            error = config.errorColor.orDefault(R.color.log_error),
+            verbose =
+                levelColors(
+                    config.verboseColor,
+                    isDark,
+                    R.color.log_verbose,
+                    R.color.log_verbose_on_dark,
+                    R.color.log_verbose_accent,
+                ),
+            debug = levelColors(config.debugColor, isDark, R.color.log_debug, R.color.log_debug_on_dark, R.color.log_debug_accent),
+            info = levelColors(config.infoColor, isDark, R.color.log_info, R.color.log_info_on_dark, R.color.log_info_accent),
+            warn = levelColors(config.warnColor, isDark, R.color.log_warn, R.color.log_warn_on_dark, R.color.log_warn_accent),
+            error = levelColors(config.errorColor, isDark, R.color.log_error, R.color.log_error_on_dark, R.color.log_error_accent),
         )
     val colorScheme =
         lightColorScheme(
@@ -96,6 +139,25 @@ internal fun VlogTheme(
     CompositionLocalProvider(LocalVlogColors provides vlogColors) {
         MaterialTheme(colorScheme = colorScheme, content = content)
     }
+}
+
+/**
+ * The colors of a level. A color the host app configured is used for the text and the bar. Otherwise the text
+ * is the variant for a light or dark surface, and the bar is the saturated one.
+ */
+@Composable
+private fun levelColors(
+    configured: Int?,
+    isDark: Boolean,
+    @ColorRes onLight: Int,
+    @ColorRes onDark: Int,
+    @ColorRes accent: Int,
+): LevelColors {
+    if (configured != null) {
+        val color = Color(configured)
+        return LevelColors(text = color, accent = color)
+    }
+    return LevelColors(text = colorResource(if (isDark) onDark else onLight), accent = colorResource(accent))
 }
 
 private fun Int?.orDefault(default: Color): Color = if (this != null) Color(this) else default

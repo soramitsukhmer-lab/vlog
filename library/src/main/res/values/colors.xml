@@ -5,7 +5,26 @@
     <color name="editTextColorHint">#7735383F</color>
     <color name="editTextColor">#35383F</color>
     <color name="white_bg">#ffffff</color>
-    <color name="log_error">#990000</color>
-    <color name="log_warn">#000099</color>
     <color name="button_bg">#D6D7D7</color>
+
+    <!-- Text of the logs per level, dark enough to read on a light surface (about 4.5:1 or better on white) -->
+    <color name="log_verbose">#546E7A</color>
+    <color name="log_debug">#1565C0</color>
+    <color name="log_info">#2E7D32</color>
+    <color name="log_warn">#B45F06</color>
+    <color name="log_error">#C62828</color>
+
+    <!-- The same text colors, lighter, for a dark surface. Used when the surface of the theme is dark -->
+    <color name="log_verbose_on_dark">#90A4AE</color>
+    <color name="log_debug_on_dark">#64B5F6</color>
+    <color name="log_info_on_dark">#81C784</color>
+    <color name="log_warn_on_dark">#FFB74D</color>
+    <color name="log_error_on_dark">#EF5350</color>
+
+    <!-- The bar next to each log. Saturated, since a bar needs less contrast than text, and fine on both surfaces -->
+    <color name="log_verbose_accent">#90A4AE</color>
+    <color name="log_debug_accent">#2196F3</color>
+    <color name="log_info_accent">#4CAF50</color>
+    <color name="log_warn_accent">#FFB300</color>
+    <color name="log_error_accent">#F44336</color>
 </resources>

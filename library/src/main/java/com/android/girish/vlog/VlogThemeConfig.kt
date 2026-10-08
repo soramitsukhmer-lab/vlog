@@ -38,8 +38,14 @@ import androidx.annotation.ColorInt
  * @property outlineColor border of the filter field
  * @property buttonColor background of the Clear and priority buttons
  * @property buttonTextColor text and icon of the Clear and priority buttons
- * @property warnColor text of warning logs
- * @property errorColor text of error logs
+ * @property warnColor text and bar of warning logs
+ * @property errorColor text and bar of error logs
+ * @property verboseColor text and bar of verbose logs
+ * @property debugColor text and bar of debug logs
+ * @property infoColor text and bar of info logs
+ *
+ * Without a level color, the logs get a color that suits the surface: dark text colors on a light
+ * [surfaceColor] and lighter ones on a dark one.
  */
 data class VlogThemeConfig
     @JvmOverloads
@@ -52,4 +58,7 @@ data class VlogThemeConfig
         @param:ColorInt val buttonTextColor: Int? = null,
         @param:ColorInt val warnColor: Int? = null,
         @param:ColorInt val errorColor: Int? = null,
+        @param:ColorInt val verboseColor: Int? = null,
+        @param:ColorInt val debugColor: Int? = null,
+        @param:ColorInt val infoColor: Int? = null,
     )

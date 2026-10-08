@@ -56,8 +56,50 @@ class VlogThemeTest {
         composeRule.waitForIdle()
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals(ComposeColor(context.getColor(R.color.log_error)), colors.error)
+        assertEquals(ComposeColor(context.getColor(R.color.log_error)), colors.error.text)
+        assertEquals(ComposeColor(context.getColor(R.color.log_error_accent)), colors.error.accent)
         assertEquals(ComposeColor(context.getColor(R.color.button_bg)), colors.button)
+    }
+
+    @Test
+    fun everyLevelHasItsOwnTextColorOnALightSurface() {
+        composeRule.setContent { VlogTheme { colors = LocalVlogColors.current } }
+        composeRule.waitForIdle()
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals(ComposeColor(context.getColor(R.color.log_verbose)), colors.verbose.text)
+        assertEquals(ComposeColor(context.getColor(R.color.log_debug)), colors.debug.text)
+        assertEquals(ComposeColor(context.getColor(R.color.log_info)), colors.info.text)
+        assertEquals(ComposeColor(context.getColor(R.color.log_warn)), colors.warn.text)
+    }
+
+    @Test
+    fun aDarkSurfaceGetsTheLighterLevelTextColors() {
+        composeRule.setContent {
+            VlogTheme(VlogThemeConfig(surfaceColor = Color.parseColor("#1E1E1E"))) { colors = LocalVlogColors.current }
+        }
+        composeRule.waitForIdle()
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals(ComposeColor(context.getColor(R.color.log_error_on_dark)), colors.error.text)
+        assertEquals(ComposeColor(context.getColor(R.color.log_info_on_dark)), colors.info.text)
+        // The bar is the same on both surfaces
+        assertEquals(ComposeColor(context.getColor(R.color.log_error_accent)), colors.error.accent)
+    }
+
+    @Test
+    fun aConfiguredLevelColorIsUsedForTheTextAndTheBar() {
+        composeRule.setContent {
+            VlogTheme(VlogThemeConfig(infoColor = Color.MAGENTA, debugColor = Color.CYAN, verboseColor = Color.YELLOW)) {
+                colors = LocalVlogColors.current
+            }
+        }
+        composeRule.waitForIdle()
+
+        assertEquals(ComposeColor(Color.MAGENTA), colors.info.text)
+        assertEquals(ComposeColor(Color.MAGENTA), colors.info.accent)
+        assertEquals(ComposeColor(Color.CYAN), colors.debug.text)
+        assertEquals(ComposeColor(Color.YELLOW), colors.verbose.accent)
     }
 
     @Test
@@ -69,7 +111,7 @@ class VlogThemeTest {
         }
         composeRule.waitForIdle()
 
-        assertEquals(ComposeColor(Color.MAGENTA), colors.error)
+        assertEquals(ComposeColor(Color.MAGENTA), colors.error.text)
         // The text color also drives the filter input and the button text
         assertEquals(ComposeColor(Color.WHITE), colors.inputText)
         assertEquals(ComposeColor(Color.WHITE), colors.buttonText)
@@ -78,7 +120,7 @@ class VlogThemeTest {
     @Test
     fun changingTheThemeThroughVlogUpdatesAShowingViewer() {
         var shownError by mutableStateOf(ComposeColor.Unspecified)
-        composeRule.setContent { VlogTheme { shownError = LocalVlogColors.current.error } }
+        composeRule.setContent { VlogTheme { shownError = LocalVlogColors.current.error.text } }
         composeRule.waitForIdle()
 
         VlogThemeState.config = VlogThemeConfig(errorColor = Color.CYAN)

@@ -121,7 +121,9 @@ vlog.setTheme(
     ),
 )
 ```
-The available colors are `surfaceColor`, `textColor`, `hintColor`, `outlineColor`, `buttonColor`, `buttonTextColor`, `warnColor` and `errorColor`. `library-no-op` has the same API, so the call compiles in release builds too.
+The available colors are `surfaceColor`, `textColor`, `hintColor`, `outlineColor`, `buttonColor`, `buttonTextColor`, and one for each log level: `verboseColor`, `debugColor`, `infoColor`, `warnColor` and `errorColor`.
+
+Every log level has its own color, for the text of its logs and for the bar next to them: blue-gray for verbose, blue for debug, green for info, amber for warn and red for error. They are dark enough to read on a light surface. When your `surfaceColor` is dark, Vlog switches to lighter variants of the same colors, so you only need to set the level colors you want to change. `library-no-op` has the same API, so the call compiles in release builds too.
 
 ### Bubble mode
 By default Vlog draws a chat head over other apps and needs the "draw over other apps" permission. Alternatively it can use the Android notification bubble API, which needs no overlay permission:
